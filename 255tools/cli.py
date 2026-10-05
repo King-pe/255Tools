@@ -5,6 +5,25 @@ import json, os, re, shutil, subprocess, sys, urllib.parse, urllib.request
 from pathlib import Path
 
 G = '\033[92m'; B = '\033[94m'; C = '\033[96m'; Y = '\033[93m'; R = '\033[91m'; X = '\033[0m'
+
+
+def load_env_file():
+    """Load simple KEY=VALUE entries without overwriting real environment vars."""
+    candidates = [Path.cwd() / '.env', Path.home() / '.255tools' / '.env']
+    for env_file in candidates:
+        if not env_file.is_file():
+            continue
+        for line in env_file.read_text(encoding='utf-8').splitlines():
+            line = line.strip()
+            if not line or line.startswith('#') or '=' not in line:
+                continue
+            key, value = line.split('=', 1)
+            key, value = key.strip(), value.strip().strip('"').strip("'")
+            if key and key not in os.environ:
+                os.environ[key] = value
+
+
+load_env_file()
 BANNER = r'''██████╗ ███████╗███████╗████████╗ ██████╗  ██████╗ ██╗     ███████╗
 ╚════██╗██╔════╝██╔════╝╚══██╔══╝██╔══██╗██╔══██╗██║     ██╔════╝
  █████╔╝███████╗███████╗   ██║   ██║  ██║██║  ██║██║     ███████╗

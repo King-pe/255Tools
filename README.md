@@ -22,6 +22,21 @@ export VIDIQ_API_KEY="your-rotated-vidiq-key"
 255tools
 ```
 
+Alternatively, create a private environment file. The `.env` file contains a value, not Python code:
+
+```bash
+mkdir -p ~/.255tools
+cp .env.example ~/.255tools/.env
+```
+
+Edit `~/.255tools/.env` so it contains only:
+
+```text
+VIDIQ_API_KEY=your-rotated-vidiq-key
+```
+
+The CLI reads this file automatically. `.env` is ignored by Git and must never be committed.
+
 Do not paste a real key into `cli.py`, `README.md`, or GitHub. Because a key was shared in chat, revoke or rotate it in vidIQ before using the replacement. Live analytics still require an official vidIQ API/MCP endpoint and an authorized account.
 
 ## Termux installation
