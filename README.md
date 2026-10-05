@@ -1,29 +1,29 @@
 # 255Tools
 
-**255Tools** ni toolkit ya Termux yenye muonekano wa kijani/bluu, iliyotengenezwa kwa ajili ya kujifunza Python, APIs, networking salama na matumizi halali ya command line.
+**255Tools** is a green/blue Termux toolkit for learning Python, APIs, safe networking, and legitimate command-line usage.
 
-## Vipengele
+## Features
 
-1. **Domain checker** — hutumia RDAP kuonyesha kama domain ina taarifa ya usajili.
-2. **Temp mail demo** — huunganisha na mail.tm kwa majaribio halali ya inbox; usitumie kwa spam, bypass au akaunti bandia.
-3. **YouTube Growth Audit** — mapendekezo ya ukuaji wa channel; haiongezi subscribers/followers bandia. Tumia YouTube Studio/vidIQ kwa analytics ukiwa ume-login mwenyewe.
-4. **Video downloader** — wrapper wa `yt-dlp`, kwa video unazoruhusiwa kuhifadhi tu. Inalenga ubora wa karibu 250p inapopatikana.
-5. **Public username finder** — hukagua links za public profiles pekee; haitafuti simu, email, location au taarifa binafsi.
-6. **Developer** — taarifa za MrCodex1Tz.
+1. **Domain checker** — uses RDAP to show whether a domain has registration information.
+2. **Temp mail demo** — connects to mail.tm for legitimate inbox testing; do not use it for spam, bypasses, or fake accounts.
+3. **YouTube Growth Audit** — provides channel growth recommendations; it does not add fake subscribers/followers. Use YouTube Studio/vidIQ for analytics while logged in yourself.
+4. **Video downloader** — a `yt-dlp` wrapper for videos you are authorized to save. It targets approximately 250p when available.
+5. **Public username finder** — checks public profile links only; it does not search for phone numbers, email addresses, locations, or private data.
+6. **Developer** — information about MrCodex1Tz.
 
-> **MVP note:** Temp mail kwa sasa ina demo ya kuunda inbox kupitia mail.tm; login, kusoma inbox na kutuma ujumbe vitahitaji kuongezwa kwa session/token handling katika toleo linalofuata. Growth feature ni audit ya ukuaji tu—hakuna subscribers bandia.
+> **MVP note:** Temp mail currently includes a demo for creating an inbox through mail.tm; login, inbox reading, and sending messages require session/token handling planned for a future version. The growth feature is an audit only—no fake subscribers are added.
 
-## Usakinishaji Termux
+## Termux installation
 
 ```bash
 pkg update -y
 pkg install -y git
- git clone https://github.com/King-pe/255Tools.git
+git clone https://github.com/King-pe/255Tools.git
 cd 255Tools
 bash install.sh
 255tools
 ```
 
-## Kanuni ya matumizi
+## Responsible use
 
-Hii ni project ya elimu. Usitumie kwa phishing, spam, fake engagement, doxxing, account takeover, kupita OTP/verification, au kuvunja Terms of Service. Code imeandikwa kwa uwazi na kwa mtindo unaosomeka kirahisi.
+This is an educational project. Do not use it for phishing, spam, fake engagement, doxxing, account takeover, bypassing OTP/verification, or violating Terms of Service. The code is intentionally readable and beginner-friendly.

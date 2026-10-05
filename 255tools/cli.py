@@ -25,97 +25,97 @@ def ask(label):
 
 
 def domain_check():
-    domain = ask('Ingiza domain (mfano example.com):').lower().strip()
+    domain = ask('Enter domain (example.com):').lower().strip()
     domain = re.sub(r'^https?://', '', domain).split('/')[0]
     if not re.match(r'^(?=.{1,253}$)([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$', domain):
-        print(f'{R}Domain si sahihi.{X}'); return
+        print(f'{R}Invalid domain.{X}'); return
     try:
         data, _ = get(f'https://rdap.org/domain/{urllib.parse.quote(domain)}')
         obj = json.loads(data)
         status = ', '.join(obj.get('status', [])) or 'unknown'
-        print(f'{G}Domain inaonekana imesajiliwa / taarifa ipo.{X}')
+        print(f'{G}The domain appears to be registered / information is available.{X}')
         print(f'  Domain: {domain}\n  Status: {status}')
     except urllib.error.HTTPError as e:
-        if e.code == 404: print(f'{G}Inaonekana domain haijasajiliwa (available candidate).{X}')
-        else: print(f'{Y}RDAP imerudisha HTTP {e.code}; jaribu tena baadaye.{X}')
-    except Exception as e: print(f'{Y}Haikuweza kuthibitisha live: {e}{X}')
+        if e.code == 404: print(f'{G}The domain appears to be unregistered (available candidate).{X}')
+        else: print(f'{Y}RDAP returned HTTP {e.code}; jaribu tena baadaye.{X}')
+    except Exception as e: print(f'{Y}Could not verify live: {e}{X}')
 
 
 def temp_mail():
-    print(f'{Y}Elimu tu: tumia inbox hii kwa majaribio halali, si spam, bypass au akaunti za udanganyifu.{X}')
-    print('1) Tengeneza inbox ya muda  2) Angalia inbox  3) Tuma ujumbe')
-    choice = ask('Chagua:')
+    print(f'{Y}Educational use only: use this inbox for legitimate testing, not spam, bypasses, or fake accounts.{X}')
+    print('1) Create temporary inbox  2) Check inbox  3) Send message')
+    choice = ask('Choose:')
     if choice == '1':
         try:
             domains = json.loads(get('https://api.mail.tm/domains')[0])['hydra:member']
-            domain = domains[0]['domain']; username = ask('Username mpya:') or f'user{os.getpid()}'
-            address = f'{username}@{domain}'; password = ask('Password (itaonekana wakati wa kuandika):')
+            domain = domains[0]['domain']; username = ask('New username:') or f'user{os.getpid()}'
+            address = f'{username}@{domain}'; password = ask('Password (visible while typing):')
             payload = json.dumps({'address': address, 'password': password}).encode()
             req = urllib.request.Request('https://api.mail.tm/accounts', data=payload, headers={'Content-Type':'application/json'}, method='POST')
             with urllib.request.urlopen(req, timeout=15) as r:
                 created = json.loads(r.read())
-                print(f"{G}Inbox imeundwa: {created.get('address', address)}{X}")
-            print(f'{Y}Hifadhi address na password kwa matumizi ya baadaye.{X}')
+                print(f"{G}Inbox created: {created.get('address', address)}{X}")
+            print(f'{Y}Save the address and password for later use.{X}')
         except Exception as e: print(f'{R}Mail.tm error: {e}{X}')
     elif choice in ('2','3'):
-        print(f'{Y}Kwa usalama, login/token management imeachwa wazi kwenye tutorial. Tumia mail.tm API docs na usitumie kwa spam.{X}')
-    else: print('Chaguo si sahihi.')
+        print(f'{Y}For safety, login/token management is left for the tutorial. Use the mail.tm API docs and do not use it for spam.{X}')
+    else: print('Invalid choice.')
 
 
 def youtube_audit():
-    url = ask('Bandika channel URL:')
-    if not re.match(r'^https?://(www\.)?(youtube\.com|youtu\.be)/', url): print(f'{R}YouTube URL si sahihi.{X}'); return
-    print(f'{G}Growth Audit ya kielimu:{X}')
-    print('• Hakuna followers/subscribers bandia wanaoongezwa.')
-    print('• Boresha title, thumbnail, retention, consistency na SEO.')
-    print('• Kwa analytics za kina, fungua vidIQ au YouTube Studio ukiwa ume-login mwenyewe.')
+    url = ask('Paste channel URL:')
+    if not re.match(r'^https?://(www\.)?(youtube\.com|youtu\.be)/', url): print(f'{R}Invalid YouTube URL.{X}'); return
+    print(f'{G}Educational Growth Audit:{X}')
+    print('• No fake followers/subscribers are added.')
+    print('• Improve your title, thumbnail, retention, consistency, and SEO.')
+    print('• For deeper analytics, open vidIQ or YouTube Studio and log in yourself.')
     print(f'{B}URL yako: {url}{X}')
 
 
 def download_video():
-    url = ask('Bandika URL ya video:')
-    if not url.startswith(('http://','https://')): print(f'{R}URL si sahihi.{X}'); return
+    url = ask('Paste video URL:')
+    if not url.startswith(('http://','https://')): print(f'{R}Invalid URL.{X}'); return
     if not shutil.which('yt-dlp'):
-        print(f'{Y}yt-dlp haipo. Sakinisha: pkg update && pkg install python ffmpeg && pip install -U yt-dlp{X}'); return
-    print(f'{Y}Pakua tu video unazoruhusiwa kuhifadhi; heshimu copyright na Terms of Service.{X}')
+        print(f'{Y}yt-dlp is not installed. Install it with: pkg update && pkg install python ffmpeg && pip install -U yt-dlp{X}'); return
+    print(f'{Y}Download only videos you are allowed to save; respect copyright and the Terms of Service.{X}')
     out = ask('Folder [downloads]:') or 'downloads'; Path(out).mkdir(exist_ok=True)
     cmd = ['yt-dlp','-f','bv*[height<=250]+ba/b[height<=250]/best','-o',f'{out}/%(title)s.%(ext)s',url]
     subprocess.run(cmd, check=False)
 
 
 def find_user():
-    handle = ask('Ingiza public username/handle (bila @):').lstrip('@').strip()
-    if not re.match(r'^[A-Za-z0-9._-]{2,50}$', handle): print(f'{R}Handle si sahihi.{X}'); return
+    handle = ask('Enter a public username/handle (without @):').lstrip('@').strip()
+    if not re.match(r'^[A-Za-z0-9._-]{2,50}$', handle): print(f'{R}Invalid handle.{X}'); return
     sites = {'GitHub':f'https://github.com/{handle}','YouTube':f'https://www.youtube.com/@{handle}','Instagram':f'https://www.instagram.com/{handle}/','X':f'https://x.com/{handle}','TikTok':f'https://www.tiktok.com/@{handle}'}
-    print(f'{Y}Hii inakagua public profile links tu; haitafuti namba, email au data binafsi.{X}')
+    print(f'{Y}This checks public profile links only; it does not search for phone numbers, email addresses, or private data.{X}')
     for name, url in sites.items():
         try:
             req=urllib.request.Request(url, headers={'User-Agent':'255Tools/1.0'})
             with urllib.request.urlopen(req, timeout=8) as r: print(f'{G}[FOUND/OPEN] {name}: {url} ({r.status}){X}')
-        except Exception: print(f'{Y}[haijathibitishwa] {name}: {url}{X}')
+        except Exception: print(f'{Y}[not verified] {name}: {url}{X}')
 
 
 def developer():
     print(f'{B}Developer: MrCodex1Tz{X}')
     print('Facebook name: MrCodex1Tz')
-    print('255Tools ni project ya kujifunza Termux, networking salama na APIs.')
-    print(f'{Y}Usitumie kwa phishing, spam, fake engagement, doxxing au uvunjaji wa faragha.{X}')
+    print('255Tools is a project for learning Termux, safe networking, and APIs.')
+    print(f'{Y}Do not use it for phishing, spam, fake engagement, doxxing, or privacy violations.{X}')
 
 
 def main():
     while True:
         os.system('clear' if os.name != 'nt' else 'cls'); print(G+BANNER+X)
         print(f'{B}255Tools — Educational Termux Toolkit{X}\n')
-        print('1. Domain checker\n2. Temp mail (mail.tm demo)\n3. YouTube Growth Audit\n4. Download video (yt-dlp)\n5. Find public username\n6. Developer\n0. Toka')
-        c=ask('Chagua kipengele:')
+        print('1. Domain checker\n2. Temp mail (mail.tm demo)\n3. YouTube Growth Audit\n4. Download video (yt-dlp)\n5. Find public username\n6. Developer\n0. Exit')
+        c=ask('Choose a feature:')
         if c=='1': domain_check()
         elif c=='2': temp_mail()
         elif c=='3': youtube_audit()
         elif c=='4': download_video()
         elif c=='5': find_user()
         elif c=='6': developer()
-        elif c=='0': print('Kwaheri.'); break
-        else: print(f'{R}Chaguo si sahihi.{X}')
-        input(f'\n{C}Bonyeza Enter kuendelea...{X}')
+        elif c=='0': print('Goodbye.'); break
+        else: print(f'{R}Invalid choice.{X}')
+        input(f'\n{C}Press Enter to continue...{X}')
 
 if __name__ == '__main__': main()
