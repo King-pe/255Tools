@@ -11,6 +11,8 @@
 5. **Public username finder** — hukagua links za public profiles pekee; haitafuti simu, email, location au taarifa binafsi.
 6. **Developer** — taarifa za MrCodex1Tz.
 
+> **MVP note:** Temp mail kwa sasa ina demo ya kuunda inbox kupitia mail.tm; login, kusoma inbox na kutuma ujumbe vitahitaji kuongezwa kwa session/token handling katika toleo linalofuata. Growth feature ni audit ya ukuaji tu—hakuna subscribers bandia.
+
 ## Usakinishaji Termux
 
 ```bash
