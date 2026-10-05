@@ -2,7 +2,7 @@
 set -e
 pkg update -y
 pkg install -y python ffmpeg git
-# Termux manages pip as a system package; never run "pip install --upgrade pip".
-# --no-build-isolation avoids downloading build dependencies during installation.
-python -m pip install --no-build-isolation --no-deps -e .
+# No pip installation is needed. Termux manages pip as a system package.
+# Install the standard-library CLI directly to the Termux command path.
+install -Dm755 255tools/cli.py "$PREFIX/bin/255tools"
 echo '255Tools installed successfully. Run: 255tools'

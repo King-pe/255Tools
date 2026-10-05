@@ -24,7 +24,7 @@ bash install.sh
 255tools
 ```
 
-> **Termux note:** Do not run `pip install --upgrade pip`. Termux manages pip as a system package, and upgrading it is intentionally blocked. The included installer uses the Termux-compatible installation command.
+> **Termux note:** No pip installation is required. Do not run `pip install --upgrade pip`; Termux manages pip as a system package, and upgrading it is intentionally blocked. The included installer places the CLI directly in `$PREFIX/bin`.
 
 ## Responsible use
 
