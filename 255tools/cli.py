@@ -5,6 +5,7 @@ import json, os, re, shutil, subprocess, sys, urllib.parse, urllib.request
 from pathlib import Path
 
 G = '\033[92m'; B = '\033[94m'; C = '\033[96m'; Y = '\033[93m'; R = '\033[91m'; X = '\033[0m'
+DEFAULT_VIDIQ_BACKEND = 'https://255tools-backed.vercel.app'
 
 
 def load_env_file():
@@ -56,7 +57,7 @@ def domain_check():
         print(f'  Domain: {domain}\n  Status: {status}')
     except urllib.error.HTTPError as e:
         if e.code == 404: print(f'{G}The domain appears to be unregistered (available candidate).{X}')
-        else: print(f'{Y}RDAP returned HTTP {e.code}; jaribu tena baadaye.{X}')
+        else: print(f'{Y}RDAP returned HTTP {e.code}; try again later.{X}')
     except Exception as e: print(f'{Y}Could not verify live: {e}{X}')
 
 
@@ -85,7 +86,7 @@ def youtube_audit():
     url = ask('Paste channel URL:')
     if not re.match(r'^https?://(www\.)?(youtube\.com|youtu\.be)/', url): print(f'{R}Invalid YouTube URL.{X}'); return
     print(f'{G}Educational Growth Audit:{X}')
-    backend = os.environ.get('VIDIQ_BACKEND_URL', '').rstrip('/')
+    backend = os.environ.get('VIDIQ_BACKEND_URL', DEFAULT_VIDIQ_BACKEND).rstrip('/')
     if backend:
         try:
             payload = json.dumps({'channel_url': url}).encode()

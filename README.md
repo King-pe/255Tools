@@ -39,10 +39,14 @@ The CLI reads this file automatically. `.env` is ignored by Git and must never b
 
 ### Optional Vercel vidIQ backend
 
-For live vidIQ analytics, deploy the private [255Tools vidIQ Backend](https://github.com/King-pe/255Tools-vidiq-backend) to Vercel, set `VIDIQ_API_KEY` and `BACKEND_TOKEN` in Vercel Environment Variables, then add these lines to `~/.255tools/.env`:
+For live vidIQ analytics, 255Tools now uses your deployed backend by default:
+
+`https://255tools-backed.vercel.app`
+
+Set `VIDIQ_API_KEY` and `BACKEND_TOKEN` in Vercel Environment Variables, then add the backend token to `~/.255tools/.env`:
 
 ```text
-VIDIQ_BACKEND_URL=https://your-project.vercel.app
+VIDIQ_BACKEND_URL=https://255tools-backed.vercel.app
 VIDIQ_BACKEND_TOKEN=the-same-backend-token
 ```
 
