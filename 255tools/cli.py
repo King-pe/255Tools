@@ -79,7 +79,11 @@ def download_video():
         print(f'{Y}yt-dlp is not installed. Install it with: pkg update && pkg install python ffmpeg && pip install -U yt-dlp{X}'); return
     print(f'{Y}Download only videos you are allowed to save; respect copyright and the Terms of Service.{X}')
     out = ask('Folder [downloads]:') or 'downloads'; Path(out).mkdir(exist_ok=True)
-    cmd = ['yt-dlp','-f','bv*[height<=250]+ba/b[height<=250]/best','-o',f'{out}/%(title)s.%(ext)s',url]
+    # Facebook and other platforms can return extremely long titles. Keep the
+    # saved filename portable for Termux/Linux filesystems.
+    cmd = ['yt-dlp','--restrict-filenames','--trim-filenames','120',
+           '-f','bv*[height<=250]+ba/b[height<=250]/best',
+           '-o',f'{out}/%(title)s.%(ext)s',url]
     subprocess.run(cmd, check=False)
 
 
