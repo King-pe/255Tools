@@ -2,6 +2,7 @@
 set -e
 pkg update -y
 pkg install -y python ffmpeg git
-python -m pip install --upgrade pip
-python -m pip install -e .
-echo '255Tools imewekwa. Endesha: 255tools'
+# Termux manages pip as a system package; never run "pip install --upgrade pip".
+# --no-build-isolation avoids downloading build dependencies during installation.
+python -m pip install --no-build-isolation --no-deps -e .
+echo '255Tools installed successfully. Run: 255tools'
