@@ -37,6 +37,17 @@ VIDIQ_API_KEY=your-rotated-vidiq-key
 
 The CLI reads this file automatically. `.env` is ignored by Git and must never be committed.
 
+### Optional Vercel vidIQ backend
+
+For live vidIQ analytics, deploy the private [255Tools vidIQ Backend](https://github.com/King-pe/255Tools-vidiq-backend) to Vercel, set `VIDIQ_API_KEY` and `BACKEND_TOKEN` in Vercel Environment Variables, then add these lines to `~/.255tools/.env`:
+
+```text
+VIDIQ_BACKEND_URL=https://your-project.vercel.app
+VIDIQ_BACKEND_TOKEN=the-same-backend-token
+```
+
+The CLI sends only the channel URL and backend token. The vidIQ key stays inside Vercel and is never sent to Termux or GitHub.
+
 Do not paste a real key into `cli.py`, `README.md`, or GitHub. Because a key was shared in chat, revoke or rotate it in vidIQ before using the replacement. Live analytics still require an official vidIQ API/MCP endpoint and an authorized account.
 
 ## Termux installation

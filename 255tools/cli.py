@@ -85,6 +85,21 @@ def youtube_audit():
     url = ask('Paste channel URL:')
     if not re.match(r'^https?://(www\.)?(youtube\.com|youtu\.be)/', url): print(f'{R}Invalid YouTube URL.{X}'); return
     print(f'{G}Educational Growth Audit:{X}')
+    backend = os.environ.get('VIDIQ_BACKEND_URL', '').rstrip('/')
+    if backend:
+        try:
+            payload = json.dumps({'channel_url': url}).encode()
+            headers = {'Content-Type': 'application/json'}
+            if os.environ.get('VIDIQ_BACKEND_TOKEN'):
+                headers['Authorization'] = f"Bearer {os.environ['VIDIQ_BACKEND_TOKEN']}"
+            req = urllib.request.Request(f'{backend}/growth-audit', data=payload, headers=headers, method='POST')
+            with urllib.request.urlopen(req, timeout=30) as response:
+                result = json.loads(response.read().decode())
+            print(f'{G}Live vidIQ backend audit received.{X}')
+            print(json.dumps(result.get('result', result), indent=2, ensure_ascii=False))
+            return
+        except Exception as error:
+            print(f'{Y}Backend audit unavailable: {error}{X}')
     if os.environ.get('VIDIQ_API_KEY'):
         print(f'{G}vidIQ API key detected from the environment.{X}')
     else:
