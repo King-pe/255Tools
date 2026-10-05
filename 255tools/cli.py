@@ -66,10 +66,14 @@ def youtube_audit():
     url = ask('Paste channel URL:')
     if not re.match(r'^https?://(www\.)?(youtube\.com|youtu\.be)/', url): print(f'{R}Invalid YouTube URL.{X}'); return
     print(f'{G}Educational Growth Audit:{X}')
+    if os.environ.get('VIDIQ_API_KEY'):
+        print(f'{G}vidIQ API key detected from the environment.{X}')
+    else:
+        print(f'{Y}vidIQ API key not configured. Set VIDIQ_API_KEY in your Termux session.{X}')
     print('• No fake followers/subscribers are added.')
     print('• Improve your title, thumbnail, retention, consistency, and SEO.')
-    print('• For deeper analytics, open vidIQ or YouTube Studio and log in yourself.')
-    print(f'{B}URL yako: {url}{X}')
+    print('• For live vidIQ analytics, use an official vidIQ API/MCP endpoint with your authorized account.')
+    print(f'{B}Channel URL: {url}{X}')
 
 
 def download_video():

@@ -13,6 +13,17 @@
 
 > **MVP note:** Temp mail currently includes a demo for creating an inbox through mail.tm; login, inbox reading, and sending messages require session/token handling planned for a future version. The growth feature is an audit only—no fake subscribers are added.
 
+### Optional vidIQ configuration
+
+The CLI reads the credential from the current Termux environment and never stores it in the repository:
+
+```bash
+export VIDIQ_API_KEY="your-rotated-vidiq-key"
+255tools
+```
+
+Do not paste a real key into `cli.py`, `README.md`, or GitHub. Because a key was shared in chat, revoke or rotate it in vidIQ before using the replacement. Live analytics still require an official vidIQ API/MCP endpoint and an authorized account.
+
 ## Termux installation
 
 ```bash
