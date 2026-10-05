@@ -52,6 +52,13 @@ VIDIQ_BACKEND_TOKEN=the-same-backend-token
 
 The CLI sends only the channel URL and backend token. The vidIQ key stays inside Vercel and is never sent to Termux or GitHub.
 
+If Growth Audit reports `401`, set the exact same random value in both places:
+
+- Vercel: `BACKEND_TOKEN`
+- Termux: `VIDIQ_BACKEND_TOKEN`
+
+After changing the CLI, update the installed command with `cd ~/255Tools && git pull && bash install.sh`.
+
 Do not paste a real key into `cli.py`, `README.md`, or GitHub. Because a key was shared in chat, revoke or rotate it in vidIQ before using the replacement. Live analytics still require an official vidIQ API/MCP endpoint and an authorized account.
 
 ## Termux installation

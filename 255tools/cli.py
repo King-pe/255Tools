@@ -88,6 +88,9 @@ def youtube_audit():
     print(f'{G}Educational Growth Audit:{X}')
     backend = os.environ.get('VIDIQ_BACKEND_URL', DEFAULT_VIDIQ_BACKEND).rstrip('/')
     if backend:
+        print(f'{C}Connecting to vidIQ backend: {backend}{X}')
+        if not os.environ.get('VIDIQ_BACKEND_TOKEN'):
+            print(f'{Y}VIDIQ_BACKEND_TOKEN is missing; add the same BACKEND_TOKEN used in Vercel.{X}')
         try:
             payload = json.dumps({'channel_url': url}).encode()
             headers = {'Content-Type': 'application/json'}
@@ -99,6 +102,11 @@ def youtube_audit():
             print(f'{G}Live vidIQ backend audit received.{X}')
             print(json.dumps(result.get('result', result), indent=2, ensure_ascii=False))
             return
+        except urllib.error.HTTPError as error:
+            if error.code == 401:
+                print(f'{R}Backend rejected the request (401). Check that VIDIQ_BACKEND_TOKEN matches Vercel BACKEND_TOKEN.{X}')
+            else:
+                print(f'{Y}Backend returned HTTP {error.code}.{X}')
         except Exception as error:
             print(f'{Y}Backend audit unavailable: {error}{X}')
     if os.environ.get('VIDIQ_API_KEY'):
