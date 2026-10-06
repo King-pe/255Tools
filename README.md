@@ -41,7 +41,7 @@ Phone lookup uses E.164 formatting and a local country-code map. It does not per
 
 Email breach lookup requires a Have I Been Pwned API key, sends only the email you choose to check to HIBP, and never stores the key or displays passwords. Use it only for an account you control. If a breach is reported, change reused passwords and enable MFA.
 
-During Temp Mail creation, the new registration password is visible while typing by design. Use a unique username and a password of at least 8 characters. Login passwords and API keys remain hidden. A mail.tm `HTTP 422` means the submitted username/password was rejected, commonly because the username already exists.
+During Temp Mail actions 1–5, password input is visible while typing by design. Use a unique username and a password of at least 8 characters. A mail.tm `HTTP 422` means the submitted username/password was rejected, commonly because the username already exists. A `401` login requires the exact mail.tm address and password created through this tool; a different provider address is not supported.
 
 Tanzania network detection is prefix-based and can be wrong after mobile number portability. Subscriber registration data such as NIDA, owner name, ID, address, or SIM-registration records is private and is not exposed by 255Tools.
 

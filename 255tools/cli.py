@@ -68,7 +68,7 @@ def mail_request(path, method='GET', payload=None, token=None):
 
 def mail_login():
     address = ask('Email address:')
-    password = getpass.getpass('Password (hidden): ')
+    password = ask('Password:')
     result = mail_request('/token', method='POST', payload={'address': address, 'password': password})
     return result['token'], address
 
@@ -194,6 +194,8 @@ def temp_mail():
     except urllib.error.HTTPError as error:
         if error.code == 422:
             print(f'{R}mail.tm rejected the details (422). The username may already exist, or the password may not meet its rules. Try a unique username and a password of 8+ characters.{X}')
+        elif error.code == 401:
+            print(f'{R}Login failed (401). Use the exact mail.tm address and password created in this tool; other email providers are not supported here.{X}')
         else:
             print(f'{R}Mail.tm returned HTTP {error.code}.{X}')
     except Exception as error:
