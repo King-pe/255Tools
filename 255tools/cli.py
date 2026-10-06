@@ -8,12 +8,11 @@ from pathlib import Path
 G = '\033[92m'; B = '\033[94m'; C = '\033[96m'; Y = '\033[93m'; R = '\033[91m'; X = '\033[0m'
 VERSION = '2026.10.07-speed-fix'
 DEFAULT_VIDIQ_BACKEND = 'https://255tools-backed.vercel.app'
-BANNER = r'''██████╗ ███████╗███████╗████████╗ ██████╗  ██████╗ ██╗     ███████╗
-╚════██╗██╔════╝██╔════╝╚══██╔══╝██╔══██╗██╔══██╗██║     ██╔════╝
- █████╔╝███████╗███████╗   ██║   ██║  ██║██║  ██║██║     ███████╗
-██╔═══╝ ╚════██║╚════██║   ██║   ██║  ██║██║  ██║██║     ╚════██║
-███████╗███████║███████║   ██║   ╚█████╔╝╚█████╔╝███████╗███████║
-╚══════╝╚══════╝╚══════╝   ╚═╝    ╚════╝  ╚════╝ ╚══════╝╚══════╝'''
+BANNER = r''' ______   ______     ______     __         ______
+/\__  _\ /\  __ \   /\  __ \   /\ \       /\  ___\
+\/*/\ \/ \ \ \/\ \  \ \ \/\ \  \ \ \_*__  \ \___  \
+   \ \_\  \ \_____\  \ \_____\  \ \_____\  \/\_____\
+    \/_/   \/_____/   \/_____/   \/_____/   \/_____/'''
 
 
 def get(url, headers=None, timeout=15):
@@ -29,11 +28,11 @@ def ask(label):
 
 def page_header(title):
     os.system('clear' if os.name != 'nt' else 'cls')
-    print(f'{B}                         255TOOLS{X}\n')
+    print(f'{B}{BANNER}{X}\n')
     line = '═' * max(34, len(title) + 12)
-    print(f'{G}╔{line}╗{X}')
-    print(f'{G}║{X}   {B}𝙎𝙀𝘾𝙏𝙄𝙊𝙉: {title.upper()}{X}   {G}║{X}')
-    print(f'{G}╚{line}╝{X}\n')
+    print(f'{Y}╔{line}╗{X}')
+    print(f'{Y}║{X}   {B}𝙎𝙀𝘾𝙏𝙄𝙊𝙉: {title.upper()}{X}   {Y}║{X}')
+    print(f'{Y}╚{line}╝{X}\n')
 
 
 def domain_check():
@@ -492,7 +491,7 @@ def main():
         return
     while True:
         os.system('clear' if os.name != 'nt' else 'cls'); print(G+BANNER+X)
-        print(f'{B}255Tools — Educational Termux Toolkit{X}\n')
+        print(f'{B}Educational Termux Toolkit{X}\n')
         print('1. Domain checker\n2. Temp mail account\n3. Download video (yt-dlp)\n4. Social lookup (X/Twitter, Facebook, etc.)\n5. Domain DNS Check\n6. My IP\n7. IP Lookup\n8. Port Scanner\n9. Wi-Fi Scanner\n10. Internet Speed\n11. DNS Server Links\n12. HTTP Headers & SSL Check\n13. Phone Number Safety Check\n14. Tanzania Network Check\n15. Email Breach Safety Check\n16. Developer\n0. Exit')
         c=ask('Choose a feature:')
         titles = {'1':'Domain Checker','2':'Temp Mail','3':'Video Downloader','4':'Social Lookup','5':'DNS Check','6':'My IP','7':'IP Lookup','8':'Port Scanner','9':'Wi-Fi Scanner','10':'Internet Speed','11':'DNS Server Links','12':'HTTP Headers & SSL','13':'Phone Number','14':'Tanzania Network','15':'Email Breach','16':'Developer'}
