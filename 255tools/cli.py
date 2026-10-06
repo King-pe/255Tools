@@ -294,6 +294,28 @@ def headers_ssl_check():
         print(f'{Y}SSL check failed: {error}{X}')
 
 
+def phone_lookup():
+    raw = ask('Enter phone number with country code (example +255712345678):').strip()
+    compact = re.sub(r'[\s().-]', '', raw)
+    if not re.match(r'^\+[1-9]\d{7,14}$', compact):
+        print(f'{R}Use international E.164 format, for example +255712345678.{X}'); return
+    country_codes = {
+        '+1': 'US/Canada and NANP regions', '+20': 'Egypt', '+27': 'South Africa', '+30': 'Greece',
+        '+33': 'France', '+34': 'Spain', '+39': 'Italy', '+44': 'United Kingdom', '+49': 'Germany',
+        '+52': 'Mexico', '+55': 'Brazil', '+61': 'Australia', '+81': 'Japan', '+82': 'South Korea',
+        '+86': 'China', '+91': 'India', '+212': 'Morocco', '+234': 'Nigeria', '+254': 'Kenya',
+        '+255': 'Tanzania', '+256': 'Uganda', '+260': 'Zambia', '+263': 'Zimbabwe', '+267': 'Botswana',
+        '+971': 'United Arab Emirates', '+972': 'Israel', '+974': 'Qatar', '+966': 'Saudi Arabia',
+    }
+    matched = next((code for code in sorted(country_codes, key=len, reverse=True) if compact.startswith(code)), None)
+    print(f'{G}Phone number metadata:{X}')
+    print(f'  Normalized: {compact}')
+    print(f'  Country code: {matched or "unknown"}')
+    print(f'  Country/region: {country_codes.get(matched, "unknown") if matched else "unknown"}')
+    print(f'  Possible international format: yes')
+    print(f'{Y}Privacy note: this tool does not identify the owner, reveal an address, track live location, or search private social accounts.{X}')
+
+
 def ip_lookup(target=None):
     target = (ask('Enter IP address, or press Enter for your public IP:').strip() if target is None else target.strip())
     if target and not re.match(r'^[0-9a-fA-F:.]+$', target):
@@ -365,7 +387,7 @@ def main():
     while True:
         os.system('clear' if os.name != 'nt' else 'cls'); print(G+BANNER+X)
         print(f'{B}255Tools — Educational Termux Toolkit{X}\n')
-        print('1. Domain checker\n2. Temp mail account\n3. Download video (yt-dlp)\n4. Social lookup (X/Twitter, Facebook, etc.)\n5. Domain DNS Check\n6. My IP\n7. IP Lookup\n8. Port Scanner\n9. Wi-Fi Scanner\n10. Internet Speed\n11. DNS Server Links\n12. HTTP Headers & SSL Check\n13. Developer\n0. Exit')
+        print('1. Domain checker\n2. Temp mail account\n3. Download video (yt-dlp)\n4. Social lookup (X/Twitter, Facebook, etc.)\n5. Domain DNS Check\n6. My IP\n7. IP Lookup\n8. Port Scanner\n9. Wi-Fi Scanner\n10. Internet Speed\n11. DNS Server Links\n12. HTTP Headers & SSL Check\n13. Phone Number Safety Check\n14. Developer\n0. Exit')
         c=ask('Choose a feature:')
         if c=='1': domain_check()
         elif c=='2': temp_mail()
@@ -379,7 +401,8 @@ def main():
         elif c=='10': internet_speed()
         elif c=='11': dns_links()
         elif c=='12': headers_ssl_check()
-        elif c=='13': developer()
+        elif c=='13': phone_lookup()
+        elif c=='14': developer()
         elif c=='0': print('Goodbye.'); break
         else: print(f'{R}Invalid choice.{X}')
         input(f'\n{C}Press Enter to continue...{X}')
