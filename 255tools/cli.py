@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """255Tools: safe, educational Termux utilities."""
 from __future__ import annotations
-import getpass, json, os, re, shutil, socket, subprocess, sys, urllib.parse, urllib.request
+import datetime, getpass, json, os, re, shutil, socket, ssl, subprocess, sys, urllib.parse, urllib.request
 import time
 from pathlib import Path
 
@@ -251,6 +251,49 @@ def dns_links():
     print(f'{Y}This prints a provider link; it does not create or host a private DNS server.{X}')
 
 
+def headers_ssl_check():
+    raw_url = ask('Enter URL or domain (example.com):').strip()
+    url = raw_url if re.match(r'^https?://', raw_url, re.I) else f'https://{raw_url}'
+    parsed = urllib.parse.urlparse(url)
+    hostname = parsed.hostname
+    if not hostname or not re.match(r'^[A-Za-z0-9.-]+$', hostname):
+        print(f'{R}Invalid URL or hostname.{X}'); return
+    print(f'{C}HTTP headers for {url}{X}')
+    try:
+        request = urllib.request.Request(url, method='HEAD', headers={'User-Agent': '255Tools/1.0'})
+        try:
+            response = urllib.request.urlopen(request, timeout=15)
+        except urllib.error.HTTPError as error:
+            response = error
+        print(f'{G}HTTP status: {response.status}{X}')
+        sensitive = {'set-cookie', 'cookie', 'authorization', 'proxy-authorization'}
+        for key, value in response.headers.items():
+            shown = '[redacted]' if key.lower() in sensitive else value
+            print(f'  {key}: {shown}')
+        response.close()
+    except Exception as error:
+        print(f'{Y}HTTP header check failed: {error}{X}')
+    print(f'{C}SSL certificate for {hostname}{X}')
+    try:
+        context = ssl.create_default_context()
+        with socket.create_connection((hostname, 443), timeout=15) as raw_socket:
+            with context.wrap_socket(raw_socket, server_hostname=hostname) as tls_socket:
+                certificate = tls_socket.getpeercert()
+                expires_raw = certificate.get('notAfter')
+                expires = datetime.datetime.fromtimestamp(ssl.cert_time_to_seconds(expires_raw), datetime.timezone.utc) if expires_raw else None
+                now = datetime.datetime.now(datetime.timezone.utc)
+                print(f'{G}Certificate valid: yes{X}')
+                print(f'  TLS version: {tls_socket.version()}')
+                print(f'  Subject: {certificate.get("subject", "unknown")}')
+                print(f'  Issuer: {certificate.get("issuer", "unknown")}')
+                print(f'  Expires: {expires.isoformat() if expires else "unknown"}')
+                if expires: print(f'  Days remaining: {(expires - now).days}')
+    except ssl.SSLCertVerificationError as error:
+        print(f'{R}Certificate valid: no — verification failed: {error}{X}')
+    except Exception as error:
+        print(f'{Y}SSL check failed: {error}{X}')
+
+
 def ip_lookup(target=None):
     target = (ask('Enter IP address, or press Enter for your public IP:').strip() if target is None else target.strip())
     if target and not re.match(r'^[0-9a-fA-F:.]+$', target):
@@ -322,7 +365,7 @@ def main():
     while True:
         os.system('clear' if os.name != 'nt' else 'cls'); print(G+BANNER+X)
         print(f'{B}255Tools — Educational Termux Toolkit{X}\n')
-        print('1. Domain checker\n2. Temp mail account\n3. Download video (yt-dlp)\n4. Social lookup (X/Twitter, Facebook, etc.)\n5. Domain DNS Check\n6. My IP\n7. IP Lookup\n8. Port Scanner\n9. Wi-Fi Scanner\n10. Internet Speed\n11. DNS Server Links\n12. Developer\n0. Exit')
+        print('1. Domain checker\n2. Temp mail account\n3. Download video (yt-dlp)\n4. Social lookup (X/Twitter, Facebook, etc.)\n5. Domain DNS Check\n6. My IP\n7. IP Lookup\n8. Port Scanner\n9. Wi-Fi Scanner\n10. Internet Speed\n11. DNS Server Links\n12. HTTP Headers & SSL Check\n13. Developer\n0. Exit')
         c=ask('Choose a feature:')
         if c=='1': domain_check()
         elif c=='2': temp_mail()
@@ -335,7 +378,8 @@ def main():
         elif c=='9': wifi_scanner()
         elif c=='10': internet_speed()
         elif c=='11': dns_links()
-        elif c=='12': developer()
+        elif c=='12': headers_ssl_check()
+        elif c=='13': developer()
         elif c=='0': print('Goodbye.'); break
         else: print(f'{R}Invalid choice.{X}')
         input(f'\n{C}Press Enter to continue...{X}')
