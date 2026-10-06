@@ -29,6 +29,7 @@ def ask(label):
 
 def page_header(title):
     os.system('clear' if os.name != 'nt' else 'cls')
+    print(f'{B}                         255TOOLS{X}\n')
     line = '═' * max(34, len(title) + 12)
     print(f'{G}╔{line}╗{X}')
     print(f'{G}║{X}   {B}𝙎𝙀𝘾𝙏𝙄𝙊𝙉: {title.upper()}{X}   {G}║{X}')
@@ -79,7 +80,10 @@ def temp_mail():
     choice = ask('Choose:')
     try:
         if choice == '1':
-            domains = mail_request('/domains')['hydra:member']
+            domain_response = mail_request('/domains')
+            domains = domain_response.get('hydra:member', []) if isinstance(domain_response, dict) else domain_response
+            if not domains or not isinstance(domains[0], dict) or not domains[0].get('domain'):
+                raise RuntimeError('mail.tm returned no usable domains; try again later')
             domain = domains[0]['domain']; username = ask('New username:') or f'user{os.getpid()}'
             address = f'{username}@{domain}'; password = getpass.getpass('New password (hidden): ')
             created = mail_request('/accounts', method='POST', payload={'address': address, 'password': password})
