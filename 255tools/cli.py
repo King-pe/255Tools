@@ -26,6 +26,14 @@ def ask(label):
     except (EOFError, KeyboardInterrupt): print(); return ''
 
 
+def page_header(title):
+    os.system('clear' if os.name != 'nt' else 'cls')
+    line = '═' * max(34, len(title) + 12)
+    print(f'{G}╔{line}╗{X}')
+    print(f'{G}║{X}   {B}𝙎𝙀𝘾𝙏𝙄𝙊𝙉: {title.upper()}{X}   {G}║{X}')
+    print(f'{G}╚{line}╝{X}\n')
+
+
 def domain_check():
     domain = ask('Enter domain (example.com):').lower().strip()
     domain = re.sub(r'^https?://', '', domain).split('/')[0]
@@ -176,7 +184,7 @@ def wifi_scanner():
     choice = ask('Choose:')
     if choice == '1':
         try:
-            result = subprocess.run(['termux-wifi-scaninfo'], capture_output=True, text=True, timeout=20)
+            result = subprocess.run(['termux-wifi-scaninfo'], capture_output=True, text=True, timeout=8)
             if result.returncode != 0: raise RuntimeError(result.stderr.strip() or 'scan failed')
             networks = json.loads(result.stdout or '[]')
             if not networks:
@@ -188,12 +196,17 @@ def wifi_scanner():
                 security = item.get('capabilities') or item.get('security') or 'unknown security'
                 strength = item.get('level', '?')
                 print(f'  {ssid} | signal: {strength} dBm | {security}')
-        except Exception as error:
-            print(f'{R}Wi-Fi scan error: {error}{X}')
+        except subprocess.TimeoutExpired:
+            print(f'{Y}Wi-Fi scan did not respond. Enable Android Location and Nearby devices permissions, then try again.{X}')
+            print(f'{C}You can also scan from Android Settings → Network & internet → Wi-Fi.{X}')
+        except Exception:
+            print(f'{Y}Wi-Fi scan is unavailable. Check that Termux:API is installed and permissions are enabled.{X}')
     elif choice == '2':
         if not shutil.which('termux-wifi-connect'):
-            print(f'{R}Your installed Termux:API does not provide termux-wifi-connect.{X}')
-            print(f'{Y}Use Android Wi-Fi settings to connect, then use option 1 to scan.{X}')
+            print(f'{Y}This Termux:API version cannot connect directly.{X}')
+            print(f'{C}Opening Android Wi-Fi Settings. Connect there, then return to 255Tools and scan again.{X}')
+            if shutil.which('am'):
+                subprocess.run(['am', 'start', '-a', 'android.settings.WIFI_SETTINGS'], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             return
         ssid = ask('Authorized Wi-Fi name (SSID):')
         password = getpass.getpass('Wi-Fi password (hidden): ')
@@ -203,8 +216,8 @@ def wifi_scanner():
                 print(f'{G}Connection request sent for {ssid}.{X}')
             else:
                 print(f'{R}Wi-Fi connection failed: {result.stderr.strip() or "unknown error"}{X}')
-        except Exception as error:
-            print(f'{R}Wi-Fi connection error: {error}{X}')
+        except Exception:
+            print(f'{Y}Wi-Fi connection request was unavailable. Use Android Wi-Fi Settings instead.{X}')
     else:
         print('Invalid choice.')
 
@@ -213,12 +226,22 @@ def internet_speed():
     print(f'{Y}Speed test uses a limited public download sample; results are approximate.{X}')
     try:
         start = time.perf_counter()
-        with urllib.request.urlopen('https://speed.cloudflare.com/__down?bytes=10000000', timeout=30) as response:
-            total = 0
-            while True:
-                chunk = response.read(256 * 1024)
-                if not chunk: break
-                total += len(chunk)
+        total = 0
+        endpoints = ('https://speed.cloudflare.com/__down?bytes=1000000', 'https://proof.ovh.net/files/1Mb.dat')
+        last_error = None
+        for endpoint in endpoints:
+            try:
+                request = urllib.request.Request(endpoint, headers={'User-Agent': '255Tools/1.0', 'Accept': '*/*'})
+                with urllib.request.urlopen(request, timeout=20) as response:
+                    while True:
+                        chunk = response.read(256 * 1024)
+                        if not chunk: break
+                        total += len(chunk)
+                if total: break
+            except Exception as error:
+                last_error = error
+        if not total:
+            raise RuntimeError(f'public speed servers unavailable ({last_error})')
         elapsed = max(time.perf_counter() - start, 0.001)
         mbps = (total * 8 / elapsed) / 1_000_000
         print(f'{G}Download: {mbps:.2f} Mbps ({total / 1_000_000:.1f} MB in {elapsed:.2f}s){X}')
@@ -452,6 +475,8 @@ def main():
         print(f'{B}255Tools — Educational Termux Toolkit{X}\n')
         print('1. Domain checker\n2. Temp mail account\n3. Download video (yt-dlp)\n4. Social lookup (X/Twitter, Facebook, etc.)\n5. Domain DNS Check\n6. My IP\n7. IP Lookup\n8. Port Scanner\n9. Wi-Fi Scanner\n10. Internet Speed\n11. DNS Server Links\n12. HTTP Headers & SSL Check\n13. Phone Number Safety Check\n14. Tanzania Network Check\n15. Email Breach Safety Check\n16. Developer\n0. Exit')
         c=ask('Choose a feature:')
+        titles = {'1':'Domain Checker','2':'Temp Mail','3':'Video Downloader','4':'Social Lookup','5':'DNS Check','6':'My IP','7':'IP Lookup','8':'Port Scanner','9':'Wi-Fi Scanner','10':'Internet Speed','11':'DNS Server Links','12':'HTTP Headers & SSL','13':'Phone Number','14':'Tanzania Network','15':'Email Breach','16':'Developer'}
+        if c in titles: page_header(titles[c])
         if c=='1': domain_check()
         elif c=='2': temp_mail()
         elif c=='3': download_video()

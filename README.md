@@ -31,6 +31,8 @@ Wi-Fi scanning requires the separate **Termux:API Android app**, Android locatio
 
 DNS links do not create a private DNS server or guarantee faster internet; performance depends on the carrier and location. AdGuard blocks many ads and trackers, but no DNS service blocks every ad. Choose the provider in Android **Private DNS** settings and switch back if an app or website needs another resolver.
 
+Each feature now opens on its own titled page with a large green/blue section heading. Internet Speed uses a fallback download endpoint if the first public server returns an access error. Wi-Fi scanning now exits cleanly on timeout and opens Android Wi-Fi Settings when the installed Termux:API cannot connect directly.
+
 HTTP security checks redact cookies and authorization headers so session secrets are not printed to the terminal.
 
 Phone lookup uses E.164 formatting and a local country-code map. It does not perform reverse-owner lookup, live tracking, address discovery, or private social-account searches.
