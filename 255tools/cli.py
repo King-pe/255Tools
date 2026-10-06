@@ -155,7 +155,14 @@ def temp_mail():
             if not domains or not isinstance(domains[0], dict) or not domains[0].get('domain'):
                 raise RuntimeError('mail.tm returned no usable domains; try again later')
             domain = domains[0]['domain']; username = ask('New username:') or f'user{os.getpid()}'
+            if not re.match(r'^[A-Za-z0-9][A-Za-z0-9._-]{2,63}$', username):
+                print(f'{R}Username must be 3–64 characters using letters, numbers, dot, underscore, or hyphen.{X}')
+                return
+            print(f'{Y}Password input is hidden; type it normally and press Enter. No characters will be displayed.{X}')
             address = f'{username}@{domain}'; password = getpass.getpass('New password (hidden): ')
+            if len(password) < 8:
+                print(f'{R}Password must be at least 8 characters.{X}')
+                return
             created = mail_request('/accounts', method='POST', payload={'address': address, 'password': password})
             print(f"{G}Inbox created: {created.get('address', address)}{X}")
             print(f'{Y}Keep the address and password private. Use option 2 to read messages.{X}')
@@ -184,6 +191,11 @@ def temp_mail():
             auto_refresh_inbox()
         else:
             print('Invalid choice.')
+    except urllib.error.HTTPError as error:
+        if error.code == 422:
+            print(f'{R}mail.tm rejected the details (422). The username may already exist, or the password may not meet its rules. Try a unique username and a password of 8+ characters.{X}')
+        else:
+            print(f'{R}Mail.tm returned HTTP {error.code}.{X}')
     except Exception as error:
         print(f'{R}Mail.tm error: {error}{X}')
 
