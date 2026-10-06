@@ -1,30 +1,11 @@
 #!/usr/bin/env python3
 """255Tools: safe, educational Termux utilities."""
 from __future__ import annotations
-import json, os, re, shutil, subprocess, sys, urllib.parse, urllib.request
+import json, os, re, shutil, socket, subprocess, sys, urllib.parse, urllib.request
 from pathlib import Path
 
 G = '\033[92m'; B = '\033[94m'; C = '\033[96m'; Y = '\033[93m'; R = '\033[91m'; X = '\033[0m'
 DEFAULT_VIDIQ_BACKEND = 'https://255tools-backed.vercel.app'
-
-
-def load_env_file():
-    """Load simple KEY=VALUE entries without overwriting real environment vars."""
-    candidates = [Path.cwd() / '.env', Path.home() / '.255tools' / '.env']
-    for env_file in candidates:
-        if not env_file.is_file():
-            continue
-        for line in env_file.read_text(encoding='utf-8').splitlines():
-            line = line.strip()
-            if not line or line.startswith('#') or '=' not in line:
-                continue
-            key, value = line.split('=', 1)
-            key, value = key.strip(), value.strip().strip('"').strip("'")
-            if key and key not in os.environ:
-                os.environ[key] = value
-
-
-load_env_file()
 BANNER = r'''██████╗ ███████╗███████╗████████╗ ██████╗  ██████╗ ██╗     ███████╗
 ╚════██╗██╔════╝██╔════╝╚══██╔══╝██╔══██╗██╔══██╗██║     ██╔════╝
  █████╔╝███████╗███████╗   ██║   ██║  ██║██║  ██║██║     ███████╗
@@ -82,41 +63,26 @@ def temp_mail():
     else: print('Invalid choice.')
 
 
-def youtube_audit():
-    url = ask('Paste channel URL:')
-    if not re.match(r'^https?://(www\.)?(youtube\.com|youtu\.be)/', url): print(f'{R}Invalid YouTube URL.{X}'); return
-    print(f'{G}Educational Growth Audit:{X}')
-    backend = os.environ.get('VIDIQ_BACKEND_URL', DEFAULT_VIDIQ_BACKEND).rstrip('/')
-    if backend:
-        print(f'{C}Connecting to vidIQ backend: {backend}{X}')
-        if not os.environ.get('VIDIQ_BACKEND_TOKEN'):
-            print(f'{Y}VIDIQ_BACKEND_TOKEN is missing; add the same BACKEND_TOKEN used in Vercel.{X}')
-        try:
-            payload = json.dumps({'channel_url': url}).encode()
-            headers = {'Content-Type': 'application/json'}
-            if os.environ.get('VIDIQ_BACKEND_TOKEN'):
-                headers['Authorization'] = f"Bearer {os.environ['VIDIQ_BACKEND_TOKEN']}"
-            req = urllib.request.Request(f'{backend}/growth-audit', data=payload, headers=headers, method='POST')
-            with urllib.request.urlopen(req, timeout=30) as response:
-                result = json.loads(response.read().decode())
-            print(f'{G}Live vidIQ backend audit received.{X}')
-            print(json.dumps(result.get('result', result), indent=2, ensure_ascii=False))
-            return
-        except urllib.error.HTTPError as error:
-            if error.code == 401:
-                print(f'{R}Backend rejected the request (401). Check that VIDIQ_BACKEND_TOKEN matches Vercel BACKEND_TOKEN.{X}')
-            else:
-                print(f'{Y}Backend returned HTTP {error.code}.{X}')
-        except Exception as error:
-            print(f'{Y}Backend audit unavailable: {error}{X}')
-    if os.environ.get('VIDIQ_API_KEY'):
-        print(f'{G}vidIQ API key detected from the environment.{X}')
+def dns_check():
+    domain = ask('Enter domain (example.com):').lower().strip()
+    domain = re.sub(r'^https?://', '', domain).split('/')[0].rstrip('.')
+    if not re.match(r'^(?=.{1,253}$)([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$', domain):
+        print(f'{R}Invalid domain.{X}'); return
+    print(f'{C}DNS check for {domain}{X}')
+    try:
+        infos = socket.getaddrinfo(domain, 443, type=socket.SOCK_STREAM)
+        addresses = sorted({item[4][0] for item in infos})
+        print(f'{G}A/AAAA: connected — {", ".join(addresses)}{X}')
+    except socket.gaierror:
+        print(f'{R}A/AAAA: no address found{X}')
+    if shutil.which('dig'):
+        for record in ('NS', 'MX', 'TXT'):
+            result = subprocess.run(['dig', '+short', record, domain], capture_output=True, text=True, timeout=10)
+            values = result.stdout.strip()
+            print(f'{G}{record}: {values or "not found"}{X}')
     else:
-        print(f'{Y}vidIQ API key not configured. Set VIDIQ_API_KEY in your Termux session.{X}')
-    print('• No fake followers/subscribers are added.')
-    print('• Improve your title, thumbnail, retention, consistency, and SEO.')
-    print('• For live vidIQ analytics, use an official vidIQ API/MCP endpoint with your authorized account.')
-    print(f'{B}Channel URL: {url}{X}')
+        print(f'{Y}NS/MX/TXT checks need dig. Install it with: pkg install dnsutils{X}')
+    print(f'{B}DNS records show configuration only; they do not verify website ownership or SSL.{X}')
 
 
 def download_video():
@@ -137,7 +103,7 @@ def download_video():
 def find_user():
     handle = ask('Enter a public username/handle (without @):').lstrip('@').strip()
     if not re.match(r'^[A-Za-z0-9._-]{2,50}$', handle): print(f'{R}Invalid handle.{X}'); return
-    sites = {'GitHub':f'https://github.com/{handle}','YouTube':f'https://www.youtube.com/@{handle}','Instagram':f'https://www.instagram.com/{handle}/','X':f'https://x.com/{handle}','TikTok':f'https://www.tiktok.com/@{handle}'}
+    sites = {'GitHub':f'https://github.com/{handle}','YouTube':f'https://www.youtube.com/@{handle}','Facebook':f'https://www.facebook.com/{handle}','Instagram':f'https://www.instagram.com/{handle}/','X':f'https://x.com/{handle}','TikTok':f'https://www.tiktok.com/@{handle}'}
     print(f'{Y}This checks public profile links only; it does not search for phone numbers, email addresses, or private data.{X}')
     for name, url in sites.items():
         try:
@@ -157,13 +123,13 @@ def main():
     while True:
         os.system('clear' if os.name != 'nt' else 'cls'); print(G+BANNER+X)
         print(f'{B}255Tools — Educational Termux Toolkit{X}\n')
-        print('1. Domain checker\n2. Temp mail (mail.tm demo)\n3. YouTube Growth Audit\n4. Download video (yt-dlp)\n5. Find public username\n6. Developer\n0. Exit')
+        print('1. Domain checker\n2. Temp mail (mail.tm demo)\n3. Download video (yt-dlp)\n4. Find public username\n5. Domain DNS Check\n6. Developer\n0. Exit')
         c=ask('Choose a feature:')
         if c=='1': domain_check()
         elif c=='2': temp_mail()
-        elif c=='3': youtube_audit()
-        elif c=='4': download_video()
-        elif c=='5': find_user()
+        elif c=='3': download_video()
+        elif c=='4': find_user()
+        elif c=='5': dns_check()
         elif c=='6': developer()
         elif c=='0': print('Goodbye.'); break
         else: print(f'{R}Invalid choice.{X}')
