@@ -12,13 +12,16 @@
 6. **My IP** — shows your public IP, country, region, city, ISP, ASN, timezone, latitude and longitude.
 7. **IP Lookup** — looks up the same public metadata for an IP address you enter.
 8. **Port Scanner** — performs a bounded TCP connect scan against common ports or a user-provided list/range of up to 100 ports.
-9. **Developer** — information about MrCodex1Tz.
+9. **Wi-Fi Scanner** — lists nearby SSIDs and signal/security information through Termux:API; it can request a connection to a network you are authorized to use with a hidden password prompt.
+10. **Developer** — information about MrCodex1Tz.
 
 > **MVP note:** YouTube Boost/Growth Audit has been removed; 255Tools does not add fake subscribers. SMS sending is not included: use a legitimate SMS provider and the recipient's consent for messaging.
 
 IP location is approximate provider-level geolocation. It does not reveal a reliable person identity or exact street address.
 
 Port Scanner is for systems you own or have explicit permission to test. It uses a short timeout, reports open TCP ports only, and limits each scan to 100 ports.
+
+Wi-Fi scanning requires the separate **Termux:API Android app**, Android location permission, and the `termux-api` package. The tool does not brute-force passwords, capture other users' credentials, or connect to networks without authorization.
 
 ## Termux installation
 

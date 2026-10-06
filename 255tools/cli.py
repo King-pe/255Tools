@@ -166,6 +166,48 @@ def port_scanner():
         print(f'{G}Open ports: {", ".join(map(str, open_ports))}{X}')
 
 
+def wifi_scanner():
+    print(f'{Y}Scan and connect only to Wi-Fi networks you own or are authorized to use.{X}')
+    if not shutil.which('termux-wifi-scaninfo'):
+        print(f'{R}Termux:API is not installed. Install the Termux:API app and run: pkg install termux-api{X}')
+        return
+    print('1. Scan nearby Wi-Fi networks\n2. Connect to an authorized network')
+    choice = ask('Choose:')
+    if choice == '1':
+        try:
+            result = subprocess.run(['termux-wifi-scaninfo'], capture_output=True, text=True, timeout=20)
+            if result.returncode != 0: raise RuntimeError(result.stderr.strip() or 'scan failed')
+            networks = json.loads(result.stdout or '[]')
+            if not networks:
+                print(f'{Y}No networks returned. Enable location permission and Wi-Fi scanning on Android.{X}')
+                return
+            print(f'{G}Nearby Wi-Fi networks:{X}')
+            for item in networks:
+                ssid = item.get('ssid') or '(hidden SSID)'
+                security = item.get('capabilities') or item.get('security') or 'unknown security'
+                strength = item.get('level', '?')
+                print(f'  {ssid} | signal: {strength} dBm | {security}')
+        except Exception as error:
+            print(f'{R}Wi-Fi scan error: {error}{X}')
+    elif choice == '2':
+        if not shutil.which('termux-wifi-connect'):
+            print(f'{R}Your installed Termux:API does not provide termux-wifi-connect.{X}')
+            print(f'{Y}Use Android Wi-Fi settings to connect, then use option 1 to scan.{X}')
+            return
+        ssid = ask('Authorized Wi-Fi name (SSID):')
+        password = getpass.getpass('Wi-Fi password (hidden): ')
+        try:
+            result = subprocess.run(['termux-wifi-connect', '-s', ssid, '-p', password], capture_output=True, text=True, timeout=30)
+            if result.returncode == 0:
+                print(f'{G}Connection request sent for {ssid}.{X}')
+            else:
+                print(f'{R}Wi-Fi connection failed: {result.stderr.strip() or "unknown error"}{X}')
+        except Exception as error:
+            print(f'{R}Wi-Fi connection error: {error}{X}')
+    else:
+        print('Invalid choice.')
+
+
 def ip_lookup(target=None):
     target = (ask('Enter IP address, or press Enter for your public IP:').strip() if target is None else target.strip())
     if target and not re.match(r'^[0-9a-fA-F:.]+$', target):
@@ -237,7 +279,7 @@ def main():
     while True:
         os.system('clear' if os.name != 'nt' else 'cls'); print(G+BANNER+X)
         print(f'{B}255Tools — Educational Termux Toolkit{X}\n')
-        print('1. Domain checker\n2. Temp mail account\n3. Download video (yt-dlp)\n4. Social lookup (X/Twitter, Facebook, etc.)\n5. Domain DNS Check\n6. My IP\n7. IP Lookup\n8. Port Scanner\n9. Developer\n0. Exit')
+        print('1. Domain checker\n2. Temp mail account\n3. Download video (yt-dlp)\n4. Social lookup (X/Twitter, Facebook, etc.)\n5. Domain DNS Check\n6. My IP\n7. IP Lookup\n8. Port Scanner\n9. Wi-Fi Scanner\n10. Developer\n0. Exit')
         c=ask('Choose a feature:')
         if c=='1': domain_check()
         elif c=='2': temp_mail()
@@ -247,7 +289,8 @@ def main():
         elif c=='6': my_ip()
         elif c=='7': ip_lookup()
         elif c=='8': port_scanner()
-        elif c=='9': developer()
+        elif c=='9': wifi_scanner()
+        elif c=='10': developer()
         elif c=='0': print('Goodbye.'); break
         else: print(f'{R}Invalid choice.{X}')
         input(f'\n{C}Press Enter to continue...{X}')
