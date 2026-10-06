@@ -219,34 +219,51 @@ def wifi_scanner():
 
 def internet_speed():
     print(f'{Y}Speed test uses a limited public download sample; results are approximate.{X}')
-    try:
-        start = time.perf_counter()
-        total = 0
-        endpoints = ('https://speed.cloudflare.com/__down?bytes=1000000', 'https://proof.ovh.net/files/1Mb.dat')
-        last_error = None
-        for endpoint in endpoints:
+    endpoints = ('https://speed.cloudflare.com/__down?bytes=1000000', 'https://proof.ovh.net/files/1Mb.dat')
+    last_error = 'no endpoint tried'
+    download_ok = False
+    for endpoint in endpoints:
+        try:
+            print(f'{C}Testing download connection...{X}')
+            start = time.perf_counter(); total = 0
+            request = urllib.request.Request(endpoint, headers={'User-Agent': 'Mozilla/5.0 255Tools', 'Accept': '*/*'})
+            with urllib.request.urlopen(request, timeout=20) as response:
+                while True:
+                    chunk = response.read(256 * 1024)
+                    if not chunk: break
+                    total += len(chunk)
+            if total:
+                elapsed = max(time.perf_counter() - start, 0.001)
+                mbps = (total * 8 / elapsed) / 1_000_000
+                print(f'{G}Download: {mbps:.2f} Mbps ({total / 1_000_000:.1f} MB in {elapsed:.2f}s){X}')
+                download_ok = True
+                break
+        except Exception as error:
+            last_error = str(error)
+    else:
+        if shutil.which('curl'):
             try:
-                request = urllib.request.Request(endpoint, headers={'User-Agent': '255Tools/1.0', 'Accept': '*/*'})
-                with urllib.request.urlopen(request, timeout=20) as response:
-                    while True:
-                        chunk = response.read(256 * 1024)
-                        if not chunk: break
-                        total += len(chunk)
-                if total: break
+                print(f'{C}Trying Termux curl fallback...{X}')
+                start = time.perf_counter()
+                result = subprocess.run(['curl', '-L', '--fail', '--silent', '--show-error', '--max-time', '25', '-A', '255Tools/1.0', '-o', '/dev/null', endpoints[1]], capture_output=True, text=True)
+                if result.returncode == 0:
+                    elapsed = max(time.perf_counter() - start, 0.001)
+                    print(f'{G}Download test completed via curl. Approximate speed: {(8_388_608 / elapsed) / 1_000_000:.2f} Mbps{X}')
+                    download_ok = True
+                else:
+                    raise RuntimeError(result.stderr.strip() or f'curl exit {result.returncode}')
             except Exception as error:
-                last_error = error
-        if not total:
-            raise RuntimeError(f'public speed servers unavailable ({last_error})')
-        elapsed = max(time.perf_counter() - start, 0.001)
-        mbps = (total * 8 / elapsed) / 1_000_000
-        print(f'{G}Download: {mbps:.2f} Mbps ({total / 1_000_000:.1f} MB in {elapsed:.2f}s){X}')
-        ping_start = time.perf_counter()
-        get('https://speed.cloudflare.com/cdn-cgi/trace', timeout=10)
-        latency = (time.perf_counter() - ping_start) * 1000
-        print(f'{G}HTTP latency: {latency:.0f} ms{X}')
-        print(f'{Y}Upload speed is not measured in this lightweight Termux test.{X}')
-    except Exception as error:
-        print(f'{R}Speed test error: {error}{X}')
+                last_error = str(error)
+        if not download_ok:
+            print(f'{R}Speed test unavailable: {last_error}{X}')
+            print(f'{Y}Check internet access, then try again. You can install curl with: pkg install curl{X}')
+            return
+    try:
+        ping_start = time.perf_counter(); get('https://speed.cloudflare.com/cdn-cgi/trace', timeout=10)
+        print(f'{G}HTTP latency: {(time.perf_counter() - ping_start) * 1000:.0f} ms{X}')
+    except Exception:
+        print(f'{Y}Latency test unavailable, but download test completed.{X}')
+    print(f'{Y}Upload speed is not measured in this lightweight Termux test.{X}')
 
 
 def dns_links():
