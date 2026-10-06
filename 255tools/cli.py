@@ -2,6 +2,7 @@
 """255Tools: safe, educational Termux utilities."""
 from __future__ import annotations
 import getpass, json, os, re, shutil, socket, subprocess, sys, urllib.parse, urllib.request
+import time
 from pathlib import Path
 
 G = '\033[92m'; B = '\033[94m'; C = '\033[96m'; Y = '\033[93m'; R = '\033[91m'; X = '\033[0m'
@@ -208,6 +209,48 @@ def wifi_scanner():
         print('Invalid choice.')
 
 
+def internet_speed():
+    print(f'{Y}Speed test uses a limited public download sample; results are approximate.{X}')
+    try:
+        start = time.perf_counter()
+        with urllib.request.urlopen('https://speed.cloudflare.com/__down?bytes=10000000', timeout=30) as response:
+            total = 0
+            while True:
+                chunk = response.read(256 * 1024)
+                if not chunk: break
+                total += len(chunk)
+        elapsed = max(time.perf_counter() - start, 0.001)
+        mbps = (total * 8 / elapsed) / 1_000_000
+        print(f'{G}Download: {mbps:.2f} Mbps ({total / 1_000_000:.1f} MB in {elapsed:.2f}s){X}')
+        ping_start = time.perf_counter()
+        get('https://speed.cloudflare.com/cdn-cgi/trace', timeout=10)
+        latency = (time.perf_counter() - ping_start) * 1000
+        print(f'{G}HTTP latency: {latency:.0f} ms{X}')
+        print(f'{Y}Upload speed is not measured in this lightweight Termux test.{X}')
+    except Exception as error:
+        print(f'{R}Speed test error: {error}{X}')
+
+
+def dns_links():
+    providers = {
+        '1': ('AdGuard DNS', '94.140.14.14 / 94.140.15.15', 'dns.adguard-dns.com', 'https://dns.adguard-dns.com/dns-query', 'Blocks many ads and trackers.'),
+        '2': ('Cloudflare 1.1.1.1', '1.1.1.1 / 1.0.0.1', 'one.one.one.one', 'https://cloudflare-dns.com/dns-query', 'Fast resolver; does not block all ads by default.'),
+        '3': ('Quad9', '9.9.9.9 / 149.112.112.112', 'dns.quad9.net', 'https://dns.quad9.net/dns-query', 'Blocks many malicious domains; not an ad blocker.'),
+    }
+    print('1. AdGuard DNS (ad/tracker blocking)\n2. Cloudflare (speed)\n3. Quad9 (malware blocking)')
+    choice = ask('Choose DNS provider:')
+    provider = providers.get(choice)
+    if not provider:
+        print('Invalid choice.'); return
+    name, ips, private_dns, doh, purpose = provider
+    print(f'{G}{name}{X} — {purpose}')
+    print(f'IPv4: {ips}')
+    print(f'Android Private DNS hostname: {private_dns}')
+    print(f'DNS-over-HTTPS link: {doh}')
+    print(f'{Y}Open Android Settings → Network & internet → Private DNS, then enter the hostname above.{X}')
+    print(f'{Y}This prints a provider link; it does not create or host a private DNS server.{X}')
+
+
 def ip_lookup(target=None):
     target = (ask('Enter IP address, or press Enter for your public IP:').strip() if target is None else target.strip())
     if target and not re.match(r'^[0-9a-fA-F:.]+$', target):
@@ -279,7 +322,7 @@ def main():
     while True:
         os.system('clear' if os.name != 'nt' else 'cls'); print(G+BANNER+X)
         print(f'{B}255Tools — Educational Termux Toolkit{X}\n')
-        print('1. Domain checker\n2. Temp mail account\n3. Download video (yt-dlp)\n4. Social lookup (X/Twitter, Facebook, etc.)\n5. Domain DNS Check\n6. My IP\n7. IP Lookup\n8. Port Scanner\n9. Wi-Fi Scanner\n10. Developer\n0. Exit')
+        print('1. Domain checker\n2. Temp mail account\n3. Download video (yt-dlp)\n4. Social lookup (X/Twitter, Facebook, etc.)\n5. Domain DNS Check\n6. My IP\n7. IP Lookup\n8. Port Scanner\n9. Wi-Fi Scanner\n10. Internet Speed\n11. DNS Server Links\n12. Developer\n0. Exit')
         c=ask('Choose a feature:')
         if c=='1': domain_check()
         elif c=='2': temp_mail()
@@ -290,7 +333,9 @@ def main():
         elif c=='7': ip_lookup()
         elif c=='8': port_scanner()
         elif c=='9': wifi_scanner()
-        elif c=='10': developer()
+        elif c=='10': internet_speed()
+        elif c=='11': dns_links()
+        elif c=='12': developer()
         elif c=='0': print('Goodbye.'); break
         else: print(f'{R}Invalid choice.{X}')
         input(f'\n{C}Press Enter to continue...{X}')

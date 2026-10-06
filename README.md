@@ -13,7 +13,9 @@
 7. **IP Lookup** — looks up the same public metadata for an IP address you enter.
 8. **Port Scanner** — performs a bounded TCP connect scan against common ports or a user-provided list/range of up to 100 ports.
 9. **Wi-Fi Scanner** — lists nearby SSIDs and signal/security information through Termux:API; it can request a connection to a network you are authorized to use with a hidden password prompt.
-10. **Developer** — information about MrCodex1Tz.
+10. **Internet Speed** — measures approximate download Mbps and HTTP latency using a limited public sample.
+11. **DNS Server Links** — prints Android Private DNS hostnames and DNS-over-HTTPS links for AdGuard (ads/trackers), Cloudflare (speed), and Quad9 (malware blocking).
+12. **Developer** — information about MrCodex1Tz.
 
 > **MVP note:** YouTube Boost/Growth Audit has been removed; 255Tools does not add fake subscribers. SMS sending is not included: use a legitimate SMS provider and the recipient's consent for messaging.
 
@@ -22,6 +24,8 @@ IP location is approximate provider-level geolocation. It does not reveal a reli
 Port Scanner is for systems you own or have explicit permission to test. It uses a short timeout, reports open TCP ports only, and limits each scan to 100 ports.
 
 Wi-Fi scanning requires the separate **Termux:API Android app**, Android location permission, and the `termux-api` package. The tool does not brute-force passwords, capture other users' credentials, or connect to networks without authorization.
+
+DNS links do not create a private DNS server or guarantee faster internet; performance depends on the carrier and location. AdGuard blocks many ads and trackers, but no DNS service blocks every ad. Choose the provider in Android **Private DNS** settings and switch back if an app or website needs another resolver.
 
 ## Termux installation
 
