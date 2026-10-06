@@ -17,8 +17,9 @@
 11. **DNS Server Links** — prints Android Private DNS hostnames and DNS-over-HTTPS links for AdGuard (ads/trackers), Cloudflare (speed), and Quad9 (malware blocking).
 12. **HTTP Headers & SSL Check** — inspects response status/headers and validates the TLS certificate subject, issuer, protocol, expiry, and remaining days.
 13. **Phone Number Safety Check** — validates international format and gives country-code metadata; it does not identify owners or reveal private data.
-14. **Email Breach Safety Check** — checks your email against Have I Been Pwned using a key entered privately at runtime and shows breach names/categories only.
-15. **Developer** — information about MrCodex1Tz.
+14. **Tanzania Network Check** — estimates likely Vodacom, Airtel, Tigo/Yas, Halotel, or TTCL allocation from the number prefix.
+15. **Email Breach Safety Check** — checks your email against Have I Been Pwned using a key entered privately at runtime and shows breach names/categories only.
+16. **Developer** — information about MrCodex1Tz.
 
 > **MVP note:** YouTube Boost/Growth Audit has been removed; 255Tools does not add fake subscribers. SMS sending is not included: use a legitimate SMS provider and the recipient's consent for messaging.
 
@@ -35,6 +36,8 @@ HTTP security checks redact cookies and authorization headers so session secrets
 Phone lookup uses E.164 formatting and a local country-code map. It does not perform reverse-owner lookup, live tracking, address discovery, or private social-account searches.
 
 Email breach lookup requires a Have I Been Pwned API key, sends only the email you choose to check to HIBP, and never stores the key or displays passwords. Use it only for an account you control. If a breach is reported, change reused passwords and enable MFA.
+
+Tanzania network detection is prefix-based and can be wrong after mobile number portability. Subscriber registration data such as NIDA, owner name, ID, address, or SIM-registration records is private and is not exposed by 255Tools.
 
 ## Termux installation
 

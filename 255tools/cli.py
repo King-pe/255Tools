@@ -316,6 +316,35 @@ def phone_lookup():
     print(f'{Y}Privacy note: this tool does not identify the owner, reveal an address, track live location, or search private social accounts.{X}')
 
 
+def tz_network_check():
+    raw = ask('Enter Tanzania number (+255..., 255..., or 07...):').strip()
+    compact = re.sub(r'[\s().-]', '', raw)
+    if compact.startswith('+255'):
+        local = '0' + compact[4:]
+    elif compact.startswith('255'):
+        local = '0' + compact[3:]
+    elif compact.startswith('0'):
+        local = compact
+    else:
+        print(f'{R}Use a Tanzania number beginning with +255, 255, or 0.{X}'); return
+    if not re.match(r'^0[67]\d{8}$', local):
+        print(f'{R}Invalid Tanzania mobile number format.{X}'); return
+    prefix = local[:3]
+    networks = {
+        '061': 'Halotel', '062': 'Halotel',
+        '065': 'Tigo / Yas', '067': 'Tigo / Yas', '071': 'Tigo / Yas',
+        '068': 'Airtel', '069': 'Airtel', '078': 'Airtel',
+        '074': 'Vodacom', '075': 'Vodacom', '076': 'Vodacom',
+        '073': 'TTCL',
+    }
+    print(f'{G}Tanzania number information:{X}')
+    print(f'  E.164 format: +255{local[1:]}')
+    print(f'  Prefix: {prefix}')
+    print(f'  Likely network allocation: {networks.get(prefix, "Unknown or unlisted allocation")}')
+    print(f'{Y}Important: mobile number portability means the prefix may not show the current network.{X}')
+    print(f'{Y}Subscriber registration (NIDA/name/ID/address) is private and is not available through this tool.{X}')
+
+
 def email_breach_lookup():
     email = ask('Enter your email address:').strip()
     if not re.match(r'^[^\s@]+@[^\s@]+\.[^\s@]{2,}$', email):
@@ -421,7 +450,7 @@ def main():
     while True:
         os.system('clear' if os.name != 'nt' else 'cls'); print(G+BANNER+X)
         print(f'{B}255Tools — Educational Termux Toolkit{X}\n')
-        print('1. Domain checker\n2. Temp mail account\n3. Download video (yt-dlp)\n4. Social lookup (X/Twitter, Facebook, etc.)\n5. Domain DNS Check\n6. My IP\n7. IP Lookup\n8. Port Scanner\n9. Wi-Fi Scanner\n10. Internet Speed\n11. DNS Server Links\n12. HTTP Headers & SSL Check\n13. Phone Number Safety Check\n14. Email Breach Safety Check\n15. Developer\n0. Exit')
+        print('1. Domain checker\n2. Temp mail account\n3. Download video (yt-dlp)\n4. Social lookup (X/Twitter, Facebook, etc.)\n5. Domain DNS Check\n6. My IP\n7. IP Lookup\n8. Port Scanner\n9. Wi-Fi Scanner\n10. Internet Speed\n11. DNS Server Links\n12. HTTP Headers & SSL Check\n13. Phone Number Safety Check\n14. Tanzania Network Check\n15. Email Breach Safety Check\n16. Developer\n0. Exit')
         c=ask('Choose a feature:')
         if c=='1': domain_check()
         elif c=='2': temp_mail()
@@ -436,8 +465,9 @@ def main():
         elif c=='11': dns_links()
         elif c=='12': headers_ssl_check()
         elif c=='13': phone_lookup()
-        elif c=='14': email_breach_lookup()
-        elif c=='15': developer()
+        elif c=='14': tz_network_check()
+        elif c=='15': email_breach_lookup()
+        elif c=='16': developer()
         elif c=='0': print('Goodbye.'); break
         else: print(f'{R}Invalid choice.{X}')
         input(f'\n{C}Press Enter to continue...{X}')
