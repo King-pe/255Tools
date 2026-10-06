@@ -9,9 +9,13 @@
 3. **Video downloader** — a `yt-dlp` wrapper for videos you are authorized to save. It targets approximately 250p when available.
 4. **Social lookup** — checks GitHub, YouTube, Facebook, Instagram, X/Twitter, and TikTok public profile links only; it does not search for phone numbers, email addresses, locations, private data, or private accounts.
 5. **Domain DNS Check** — checks A/AAAA addresses and, when `dig` is installed, NS/MX/TXT records to help verify DNS configuration.
-6. **Developer** — information about MrCodex1Tz.
+6. **My IP** — shows your public IP, country, region, city, ISP, ASN, timezone, latitude and longitude.
+7. **IP Lookup** — looks up the same public metadata for an IP address you enter.
+8. **Developer** — information about MrCodex1Tz.
 
 > **MVP note:** YouTube Boost/Growth Audit has been removed; 255Tools does not add fake subscribers. SMS sending is not included: use a legitimate SMS provider and the recipient's consent for messaging.
+
+IP location is approximate provider-level geolocation. It does not reveal a reliable person identity or exact street address.
 
 ## Termux installation
 

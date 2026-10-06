@@ -120,6 +120,39 @@ def dns_check():
     print(f'{B}DNS records show configuration only; they do not verify website ownership or SSL.{X}')
 
 
+def ip_lookup(target=None):
+    target = (ask('Enter IP address, or press Enter for your public IP:').strip() if target is None else target.strip())
+    if target and not re.match(r'^[0-9a-fA-F:.]+$', target):
+        print(f'{R}Invalid IP address format.{X}'); return
+    endpoint = 'https://ipwho.is/' + urllib.parse.quote(target) if target else 'https://ipwho.is/'
+    try:
+        data, _ = get(endpoint, timeout=15)
+        info = json.loads(data)
+        if not info.get('success', False):
+            print(f'{R}IP lookup failed: {info.get("message", "unknown error")}{X}'); return
+        connection = info.get('connection') or {}
+        timezone = info.get('timezone') or {}
+        print(f'{G}IP location information:{X}')
+        print(f'  IP: {info.get("ip", "unknown")}')
+        print(f'  Country: {info.get("country", "unknown")} ({info.get("country_code", "")})')
+        print(f'  Region: {info.get("region", "unknown")}')
+        print(f'  City: {info.get("city", "unknown")}')
+        print(f'  Latitude: {info.get("latitude", "unknown")}')
+        print(f'  Longitude: {info.get("longitude", "unknown")}')
+        print(f'  ISP: {connection.get("isp", "unknown")}')
+        print(f'  Organization: {connection.get("org", "unknown")}')
+        print(f'  ASN: {connection.get("asn", "unknown")}')
+        print(f'  Timezone: {timezone.get("id", "unknown")}')
+        print(f'{Y}Note: IP geolocation is approximate. It cannot reliably identify a person or exact street address.{X}')
+    except Exception as error:
+        print(f'{R}IP lookup error: {error}{X}')
+
+
+def my_ip():
+    print(f'{C}Looking up your public IP...{X}')
+    ip_lookup('')
+
+
 def download_video():
     url = ask('Paste video URL:')
     if not url.startswith(('http://','https://')): print(f'{R}Invalid URL.{X}'); return
@@ -158,14 +191,16 @@ def main():
     while True:
         os.system('clear' if os.name != 'nt' else 'cls'); print(G+BANNER+X)
         print(f'{B}255Tools — Educational Termux Toolkit{X}\n')
-        print('1. Domain checker\n2. Temp mail account\n3. Download video (yt-dlp)\n4. Social lookup (X/Twitter, Facebook, etc.)\n5. Domain DNS Check\n6. Developer\n0. Exit')
+        print('1. Domain checker\n2. Temp mail account\n3. Download video (yt-dlp)\n4. Social lookup (X/Twitter, Facebook, etc.)\n5. Domain DNS Check\n6. My IP\n7. IP Lookup\n8. Developer\n0. Exit')
         c=ask('Choose a feature:')
         if c=='1': domain_check()
         elif c=='2': temp_mail()
         elif c=='3': download_video()
         elif c=='4': find_user()
         elif c=='5': dns_check()
-        elif c=='6': developer()
+        elif c=='6': my_ip()
+        elif c=='7': ip_lookup()
+        elif c=='8': developer()
         elif c=='0': print('Goodbye.'); break
         else: print(f'{R}Invalid choice.{X}')
         input(f'\n{C}Press Enter to continue...{X}')
