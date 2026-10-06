@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """255Tools: safe, educational Termux utilities."""
 from __future__ import annotations
-import json, os, re, shutil, socket, subprocess, sys, urllib.parse, urllib.request
+import getpass, json, os, re, shutil, socket, subprocess, sys, urllib.parse, urllib.request
 from pathlib import Path
 
 G = '\033[92m'; B = '\033[94m'; C = '\033[96m'; Y = '\033[93m'; R = '\033[91m'; X = '\033[0m'
@@ -42,25 +42,60 @@ def domain_check():
     except Exception as e: print(f'{Y}Could not verify live: {e}{X}')
 
 
+MAIL_API = 'https://api.mail.tm'
+
+
+def mail_request(path, method='GET', payload=None, token=None):
+    headers = {'User-Agent': '255Tools/1.0', 'Accept': 'application/json'}
+    if token: headers['Authorization'] = f'Bearer {token}'
+    data = json.dumps(payload).encode() if payload is not None else None
+    if data: headers['Content-Type'] = 'application/json'
+    req = urllib.request.Request(f'{MAIL_API}{path}', data=data, headers=headers, method=method)
+    with urllib.request.urlopen(req, timeout=20) as response:
+        body = response.read().decode('utf-8', errors='replace')
+        return json.loads(body) if body else {}
+
+
+def mail_login():
+    address = ask('Email address:')
+    password = getpass.getpass('Password (hidden): ')
+    result = mail_request('/token', method='POST', payload={'address': address, 'password': password})
+    return result['token'], address
+
+
 def temp_mail():
-    print(f'{Y}Educational use only: use this inbox for legitimate testing, not spam, bypasses, or fake accounts.{X}')
-    print('1) Create temporary inbox  2) Check inbox  3) Send message')
+    print(f'{Y}Use only an inbox you created and control. Do not use it for spam, bypasses, or fake accounts.{X}')
+    print('1) Create inbox  2) Login and view inbox  3) Send email')
     choice = ask('Choose:')
-    if choice == '1':
-        try:
-            domains = json.loads(get('https://api.mail.tm/domains')[0])['hydra:member']
+    try:
+        if choice == '1':
+            domains = mail_request('/domains')['hydra:member']
             domain = domains[0]['domain']; username = ask('New username:') or f'user{os.getpid()}'
-            address = f'{username}@{domain}'; password = ask('Password (visible while typing):')
-            payload = json.dumps({'address': address, 'password': password}).encode()
-            req = urllib.request.Request('https://api.mail.tm/accounts', data=payload, headers={'Content-Type':'application/json'}, method='POST')
-            with urllib.request.urlopen(req, timeout=15) as r:
-                created = json.loads(r.read())
-                print(f"{G}Inbox created: {created.get('address', address)}{X}")
-            print(f'{Y}Save the address and password for later use.{X}')
-        except Exception as e: print(f'{R}Mail.tm error: {e}{X}')
-    elif choice in ('2','3'):
-        print(f'{Y}For safety, login/token management is left for the tutorial. Use the mail.tm API docs and do not use it for spam.{X}')
-    else: print('Invalid choice.')
+            address = f'{username}@{domain}'; password = getpass.getpass('New password (hidden): ')
+            created = mail_request('/accounts', method='POST', payload={'address': address, 'password': password})
+            print(f"{G}Inbox created: {created.get('address', address)}{X}")
+            print(f'{Y}Keep the address and password private. Use option 2 to read messages.{X}')
+        elif choice == '2':
+            token, address = mail_login()
+            page = mail_request('/messages?limit=20', token=token)
+            messages = page.get('hydra:member', [])
+            print(f'{G}{len(messages)} message(s) for {address}:{X}')
+            for message in messages:
+                sender = message.get('from', {}).get('address', 'unknown sender')
+                print(f"- {message.get('createdAt', '')} | {sender} | {message.get('subject', '(no subject)')} | id={message.get('id')}")
+            message_id = ask('Enter message id to read, or press Enter to finish:')
+            if message_id:
+                detail = mail_request(f'/messages/{urllib.parse.quote(message_id)}', token=token)
+                print(detail.get('text') or detail.get('intro') or '(empty message)')
+        elif choice == '3':
+            token, _ = mail_login()
+            recipient = ask('Recipient email:'); subject = ask('Subject:'); text = ask('Message:')
+            sent = mail_request('/messages', method='POST', token=token, payload={'to': [{'address': recipient}], 'subject': subject, 'text': text})
+            print(f"{G}Email sent. Message id: {sent.get('id', 'accepted')}{X}")
+        else:
+            print('Invalid choice.')
+    except Exception as error:
+        print(f'{R}Mail.tm error: {error}{X}')
 
 
 def dns_check():
@@ -123,7 +158,7 @@ def main():
     while True:
         os.system('clear' if os.name != 'nt' else 'cls'); print(G+BANNER+X)
         print(f'{B}255Tools — Educational Termux Toolkit{X}\n')
-        print('1. Domain checker\n2. Temp mail (mail.tm demo)\n3. Download video (yt-dlp)\n4. Find public username\n5. Domain DNS Check\n6. Developer\n0. Exit')
+        print('1. Domain checker\n2. Temp mail account\n3. Download video (yt-dlp)\n4. Social lookup (X/Twitter, Facebook, etc.)\n5. Domain DNS Check\n6. Developer\n0. Exit')
         c=ask('Choose a feature:')
         if c=='1': domain_check()
         elif c=='2': temp_mail()
