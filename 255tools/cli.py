@@ -90,9 +90,44 @@ def delete_temp_inbox():
     print(f'{G}Inbox deleted successfully: {address}{X}')
 
 
+def auto_refresh_inbox():
+    token, address = mail_login()
+    raw_interval = ask('Refresh interval in seconds [10]:') or '10'
+    try:
+        interval = max(5, min(300, int(raw_interval)))
+    except ValueError:
+        print(f'{R}Invalid interval. Use a number from 5 to 300 seconds.{X}')
+        return
+    print(f'{G}Auto-refresh started for {address} every {interval}s.{X}')
+    print(f'{Y}Press Ctrl+C to stop refreshing.{X}')
+    seen_ids = set()
+    first_pass = True
+    try:
+        while True:
+            page = mail_request('/messages?limit=20', token=token)
+            messages = page.get('hydra:member', []) if isinstance(page, dict) else page
+            messages = messages if isinstance(messages, list) else []
+            current_ids = {message.get('id') for message in messages if message.get('id')}
+            was_first_pass = first_pass
+            if was_first_pass:
+                print(f'{C}Inbox ready: {len(messages)} message(s). Waiting for new mail...{X}')
+                first_pass = False
+            new_messages = [message for message in messages if message.get('id') not in seen_ids]
+            if not was_first_pass:
+                for message in reversed(new_messages):
+                    sender = message.get('from', {}).get('address', 'unknown sender')
+                    print(f'{G}● NEW | {sender} | {message.get("subject", "(no subject)")} | id={message.get("id")}{X}')
+            seen_ids = current_ids
+            time.sleep(interval)
+    except KeyboardInterrupt:
+        print(f'\n{Y}Auto-refresh stopped. Your inbox was not changed.{X}')
+    except Exception as error:
+        print(f'{R}Inbox refresh stopped: {error}{X}')
+
+
 def temp_mail():
     print(f'{Y}Use only an inbox you created and control. Do not use it for spam, bypasses, or fake accounts.{X}')
-    print('1) Create inbox  2) Login and view inbox  3) Send email  4) Delete current inbox')
+    print('1) Create inbox  2) Login and view inbox  3) Send email  4) Delete current inbox  5) Auto-refresh inbox')
     choice = ask('Choose:')
     try:
         if choice == '1':
@@ -124,6 +159,8 @@ def temp_mail():
             print(f"{G}Email sent. Message id: {sent.get('id', 'accepted')}{X}")
         elif choice == '4':
             delete_temp_inbox()
+        elif choice == '5':
+            auto_refresh_inbox()
         else:
             print('Invalid choice.')
     except Exception as error:
