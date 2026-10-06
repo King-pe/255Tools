@@ -6,6 +6,7 @@ import time
 from pathlib import Path
 
 G = '\033[92m'; B = '\033[94m'; C = '\033[96m'; Y = '\033[93m'; R = '\033[91m'; X = '\033[0m'
+VERSION = '2026.10.07-speed-fix'
 DEFAULT_VIDIQ_BACKEND = 'https://255tools-backed.vercel.app'
 BANNER = r'''██████╗ ███████╗███████╗████████╗ ██████╗  ██████╗ ██╗     ███████╗
 ╚════██╗██╔════╝██╔════╝╚══██╔══╝██╔══██╗██╔══██╗██║     ██╔════╝
@@ -482,6 +483,9 @@ def developer():
 
 
 def main():
+    if '--version' in sys.argv:
+        print(f'255Tools {VERSION}')
+        return
     while True:
         os.system('clear' if os.name != 'nt' else 'cls'); print(G+BANNER+X)
         print(f'{B}255Tools — Educational Termux Toolkit{X}\n')
