@@ -120,6 +120,52 @@ def dns_check():
     print(f'{B}DNS records show configuration only; they do not verify website ownership or SSL.{X}')
 
 
+def port_scanner():
+    print(f'{Y}Scan only systems you own or have explicit permission to test.{X}')
+    target = ask('Enter IP address or domain:').strip()
+    if not re.match(r'^[A-Za-z0-9.:-]+$', target) or len(target) > 253:
+        print(f'{R}Invalid target.{X}'); return
+    raw_ports = ask('Ports [common, or e.g. 80,443,8000-8010]:').strip().lower()
+    common = [21, 22, 23, 25, 53, 80, 110, 143, 443, 445, 587, 993, 995, 3306, 3389, 5432, 8080]
+    ports = set(common) if not raw_ports or raw_ports == 'common' else set()
+    if raw_ports and raw_ports != 'common':
+        try:
+            for item in raw_ports.split(','):
+                item = item.strip()
+                if '-' in item:
+                    start, end = (int(x) for x in item.split('-', 1))
+                    if end < start or end - start > 1000: raise ValueError
+                    ports.update(range(start, end + 1))
+                else:
+                    ports.add(int(item))
+        except ValueError:
+            print(f'{R}Invalid port list or range.{X}'); return
+    ports = sorted(p for p in ports if 1 <= p <= 65535)
+    if not ports or len(ports) > 100:
+        print(f'{R}Choose between 1 and 100 valid ports.{X}'); return
+    try:
+        address = socket.getaddrinfo(target, None, type=socket.SOCK_STREAM)[0][4][0]
+    except socket.gaierror:
+        print(f'{R}Could not resolve target.{X}'); return
+    print(f'{C}Scanning {target} ({address}) — {len(ports)} port(s){X}')
+    open_ports = []
+    for port in ports:
+        is_ipv6 = ':' in address
+        sock = socket.socket(socket.AF_INET6 if is_ipv6 else socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(0.7)
+        try:
+            endpoint = (address, port, 0, 0) if is_ipv6 else (address, port)
+            if sock.connect_ex(endpoint) == 0:
+                open_ports.append(port)
+                print(f'{G}OPEN     {port}/tcp{X}')
+        finally:
+            sock.close()
+    if not open_ports:
+        print(f'{Y}No tested TCP ports reported open. Closed and filtered ports are not shown.{X}')
+    else:
+        print(f'{G}Open ports: {", ".join(map(str, open_ports))}{X}')
+
+
 def ip_lookup(target=None):
     target = (ask('Enter IP address, or press Enter for your public IP:').strip() if target is None else target.strip())
     if target and not re.match(r'^[0-9a-fA-F:.]+$', target):
@@ -191,7 +237,7 @@ def main():
     while True:
         os.system('clear' if os.name != 'nt' else 'cls'); print(G+BANNER+X)
         print(f'{B}255Tools — Educational Termux Toolkit{X}\n')
-        print('1. Domain checker\n2. Temp mail account\n3. Download video (yt-dlp)\n4. Social lookup (X/Twitter, Facebook, etc.)\n5. Domain DNS Check\n6. My IP\n7. IP Lookup\n8. Developer\n0. Exit')
+        print('1. Domain checker\n2. Temp mail account\n3. Download video (yt-dlp)\n4. Social lookup (X/Twitter, Facebook, etc.)\n5. Domain DNS Check\n6. My IP\n7. IP Lookup\n8. Port Scanner\n9. Developer\n0. Exit')
         c=ask('Choose a feature:')
         if c=='1': domain_check()
         elif c=='2': temp_mail()
@@ -200,7 +246,8 @@ def main():
         elif c=='5': dns_check()
         elif c=='6': my_ip()
         elif c=='7': ip_lookup()
-        elif c=='8': developer()
+        elif c=='8': port_scanner()
+        elif c=='9': developer()
         elif c=='0': print('Goodbye.'); break
         else: print(f'{R}Invalid choice.{X}')
         input(f'\n{C}Press Enter to continue...{X}')

@@ -11,11 +11,14 @@
 5. **Domain DNS Check** — checks A/AAAA addresses and, when `dig` is installed, NS/MX/TXT records to help verify DNS configuration.
 6. **My IP** — shows your public IP, country, region, city, ISP, ASN, timezone, latitude and longitude.
 7. **IP Lookup** — looks up the same public metadata for an IP address you enter.
-8. **Developer** — information about MrCodex1Tz.
+8. **Port Scanner** — performs a bounded TCP connect scan against common ports or a user-provided list/range of up to 100 ports.
+9. **Developer** — information about MrCodex1Tz.
 
 > **MVP note:** YouTube Boost/Growth Audit has been removed; 255Tools does not add fake subscribers. SMS sending is not included: use a legitimate SMS provider and the recipient's consent for messaging.
 
 IP location is approximate provider-level geolocation. It does not reveal a reliable person identity or exact street address.
+
+Port Scanner is for systems you own or have explicit permission to test. It uses a short timeout, reports open TCP ports only, and limits each scan to 100 ports.
 
 ## Termux installation
 
