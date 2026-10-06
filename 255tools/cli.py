@@ -158,8 +158,8 @@ def temp_mail():
             if not re.match(r'^[A-Za-z0-9][A-Za-z0-9._-]{2,63}$', username):
                 print(f'{R}Username must be 3–64 characters using letters, numbers, dot, underscore, or hyphen.{X}')
                 return
-            print(f'{Y}Password input is hidden; type it normally and press Enter. No characters will be displayed.{X}')
-            address = f'{username}@{domain}'; password = getpass.getpass('New password (hidden): ')
+            print(f'{Y}Registration password will be visible while you type it.{X}')
+            address = f'{username}@{domain}'; password = ask('New password:')
             if len(password) < 8:
                 print(f'{R}Password must be at least 8 characters.{X}')
                 return
