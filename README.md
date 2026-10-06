@@ -31,7 +31,7 @@ Wi-Fi scanning requires the separate **Termux:API Android app**, Android locatio
 
 DNS links do not create a private DNS server or guarantee faster internet; performance depends on the carrier and location. AdGuard blocks many ads and trackers, but no DNS service blocks every ad. Choose the provider in Android **Private DNS** settings and switch back if an app or website needs another resolver.
 
-Each feature now opens on its own titled page with the blue ASCII logo and a large yellow/blue section heading in the requested style. Internet Speed uses a fallback download endpoint if the first public server returns an access error. Wi-Fi scanning now exits cleanly on timeout and opens Android Wi-Fi Settings when the installed Termux:API cannot scan directly. The installer now creates a launcher pointing to the live repository source, so future `git pull` updates are not stale copies.
+Each feature now opens on its own titled page with the requested large blue ASCII logo and a yellow/blue section heading. The same logo appears on the main menu and every service page. Internet Speed uses a fallback download endpoint if the first public server returns an access error. Wi-Fi scanning now exits cleanly on timeout and opens Android Wi-Fi Settings when the installed Termux:API cannot scan directly. The installer now creates a launcher pointing to the live repository source, so future `git pull` updates are not stale copies.
 
 After the first update, run `bash install.sh` once to replace the old launcher. Confirm the active version with `255tools --version`; the current speed-fix build is `2026.10.07-speed-fix`.
 
