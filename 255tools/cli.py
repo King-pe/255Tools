@@ -316,6 +316,40 @@ def phone_lookup():
     print(f'{Y}Privacy note: this tool does not identify the owner, reveal an address, track live location, or search private social accounts.{X}')
 
 
+def email_breach_lookup():
+    email = ask('Enter your email address:').strip()
+    if not re.match(r'^[^\s@]+@[^\s@]+\.[^\s@]{2,}$', email):
+        print(f'{R}Invalid email address.{X}'); return
+    print(f'{Y}This sends the email to Have I Been Pwned only after you request the check. Never enter an email you do not control.{X}')
+    api_key = getpass.getpass('HIBP API key (hidden): ').strip()
+    if not api_key:
+        print(f'{R}A Have I Been Pwned API key is required for breach lookup.{X}'); return
+    encoded = urllib.parse.quote(email, safe='')
+    headers = {'hibp-api-key': api_key, 'user-agent': '255Tools/1.0 defensive email safety check'}
+    try:
+        data, _ = get(f'https://haveibeenpwned.com/api/v3/breachedaccount/{encoded}?truncateResponse=false', headers=headers, timeout=20)
+        breaches = json.loads(data)
+        if not breaches:
+            print(f'{G}No breaches were returned for this email.{X}')
+            return
+        print(f'{R}This email appeared in {len(breaches)} reported breach(es):{X}')
+        for breach in breaches:
+            classes = ', '.join(breach.get('DataClasses', []))
+            print(f"- {breach.get('Name', 'unknown')} | date: {breach.get('BreachDate', 'unknown')} | exposed categories: {classes}")
+        print(f'{Y}Change reused passwords and enable MFA. This tool never displays passwords or recovery secrets.{X}')
+    except urllib.error.HTTPError as error:
+        if error.code == 404:
+            print(f'{G}No breaches were returned for this email.{X}')
+        elif error.code == 401:
+            print(f'{R}HIBP API key was rejected.{X}')
+        elif error.code == 429:
+            print(f'{Y}HIBP rate limit reached; try again later.{X}')
+        else:
+            print(f'{R}HIBP returned HTTP {error.code}.{X}')
+    except Exception as error:
+        print(f'{R}Email breach lookup error: {error}{X}')
+
+
 def ip_lookup(target=None):
     target = (ask('Enter IP address, or press Enter for your public IP:').strip() if target is None else target.strip())
     if target and not re.match(r'^[0-9a-fA-F:.]+$', target):
@@ -387,7 +421,7 @@ def main():
     while True:
         os.system('clear' if os.name != 'nt' else 'cls'); print(G+BANNER+X)
         print(f'{B}255Tools — Educational Termux Toolkit{X}\n')
-        print('1. Domain checker\n2. Temp mail account\n3. Download video (yt-dlp)\n4. Social lookup (X/Twitter, Facebook, etc.)\n5. Domain DNS Check\n6. My IP\n7. IP Lookup\n8. Port Scanner\n9. Wi-Fi Scanner\n10. Internet Speed\n11. DNS Server Links\n12. HTTP Headers & SSL Check\n13. Phone Number Safety Check\n14. Developer\n0. Exit')
+        print('1. Domain checker\n2. Temp mail account\n3. Download video (yt-dlp)\n4. Social lookup (X/Twitter, Facebook, etc.)\n5. Domain DNS Check\n6. My IP\n7. IP Lookup\n8. Port Scanner\n9. Wi-Fi Scanner\n10. Internet Speed\n11. DNS Server Links\n12. HTTP Headers & SSL Check\n13. Phone Number Safety Check\n14. Email Breach Safety Check\n15. Developer\n0. Exit')
         c=ask('Choose a feature:')
         if c=='1': domain_check()
         elif c=='2': temp_mail()
@@ -402,7 +436,8 @@ def main():
         elif c=='11': dns_links()
         elif c=='12': headers_ssl_check()
         elif c=='13': phone_lookup()
-        elif c=='14': developer()
+        elif c=='14': email_breach_lookup()
+        elif c=='15': developer()
         elif c=='0': print('Goodbye.'); break
         else: print(f'{R}Invalid choice.{X}')
         input(f'\n{C}Press Enter to continue...{X}')
