@@ -12,7 +12,7 @@
 6. **My IP** — shows your public IP, country, region, city, ISP, ASN, timezone, latitude and longitude.
 7. **IP Lookup** — looks up the same public metadata for an IP address you enter.
 8. **Port Scanner** — performs a bounded TCP connect scan against common ports or a user-provided list/range of up to 100 ports.
-9. **Wi-Fi Scanner** — lists nearby SSIDs and signal/security information through Termux:API; it can request a connection to a network you are authorized to use with a hidden password prompt.
+9. **Wi-Fi Scanner** — lists nearby SSIDs and signal/security information through Termux:API, or opens Android Wi-Fi Settings when direct scanning is unavailable.
 10. **Internet Speed** — measures approximate download Mbps and HTTP latency using a limited public sample.
 11. **DNS Server Links** — prints Android Private DNS hostnames and DNS-over-HTTPS links for AdGuard (ads/trackers), Cloudflare (speed), and Quad9 (malware blocking).
 12. **HTTP Headers & SSL Check** — inspects response status/headers and validates the TLS certificate subject, issuer, protocol, expiry, and remaining days.
@@ -31,7 +31,7 @@ Wi-Fi scanning requires the separate **Termux:API Android app**, Android locatio
 
 DNS links do not create a private DNS server or guarantee faster internet; performance depends on the carrier and location. AdGuard blocks many ads and trackers, but no DNS service blocks every ad. Choose the provider in Android **Private DNS** settings and switch back if an app or website needs another resolver.
 
-Each feature now opens on its own titled page with a large green/blue section heading. Internet Speed uses a fallback download endpoint if the first public server returns an access error. Wi-Fi scanning now exits cleanly on timeout and opens Android Wi-Fi Settings when the installed Termux:API cannot connect directly.
+Each feature now opens on its own titled page with a large green/blue section heading. Internet Speed uses a fallback download endpoint if the first public server returns an access error. Wi-Fi scanning now exits cleanly on timeout and opens Android Wi-Fi Settings when the installed Termux:API cannot scan directly.
 
 HTTP security checks redact cookies and authorization headers so session secrets are not printed to the terminal.
 

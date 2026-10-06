@@ -176,11 +176,16 @@ def port_scanner():
 
 
 def wifi_scanner():
-    print(f'{Y}Scan and connect only to Wi-Fi networks you own or are authorized to use.{X}')
+    print(f'{Y}Wi-Fi Scanner — scan nearby networks you are authorized to use.{X}')
     if not shutil.which('termux-wifi-scaninfo'):
-        print(f'{R}Termux:API is not installed. Install the Termux:API app and run: pkg install termux-api{X}')
+        print(f'{Y}Wi-Fi scan command is unavailable in this Termux session.{X}')
+        print('Install the Termux:API Android app from the same source as Termux, then run:')
+        print('  pkg install termux-api')
+        print(f'{C}Opening Android Wi-Fi Settings instead.{X}')
+        if shutil.which('am'):
+            subprocess.run(['am', 'start', '-a', 'android.settings.WIFI_SETTINGS'], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         return
-    print('1. Scan nearby Wi-Fi networks\n2. Connect to an authorized network')
+    print('1. Scan nearby Wi-Fi networks\n2. Open Android Wi-Fi Settings')
     choice = ask('Choose:')
     if choice == '1':
         try:
@@ -197,27 +202,17 @@ def wifi_scanner():
                 strength = item.get('level', '?')
                 print(f'  {ssid} | signal: {strength} dBm | {security}')
         except subprocess.TimeoutExpired:
-            print(f'{Y}Wi-Fi scan did not respond. Enable Android Location and Nearby devices permissions, then try again.{X}')
+            print(f'{Y}Wi-Fi scan timed out. Enable Android Location and Nearby devices permissions, then try again.{X}')
             print(f'{C}You can also scan from Android Settings → Network & internet → Wi-Fi.{X}')
         except Exception:
-            print(f'{Y}Wi-Fi scan is unavailable. Check that Termux:API is installed and permissions are enabled.{X}')
-    elif choice == '2':
-        if not shutil.which('termux-wifi-connect'):
-            print(f'{Y}This Termux:API version cannot connect directly.{X}')
-            print(f'{C}Opening Android Wi-Fi Settings. Connect there, then return to 255Tools and scan again.{X}')
+            print(f'{Y}Wi-Fi scan is unavailable. Check Termux:API and Android permissions.{X}')
+            print(f'{C}Opening Android Wi-Fi Settings.{X}')
             if shutil.which('am'):
                 subprocess.run(['am', 'start', '-a', 'android.settings.WIFI_SETTINGS'], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            return
-        ssid = ask('Authorized Wi-Fi name (SSID):')
-        password = getpass.getpass('Wi-Fi password (hidden): ')
-        try:
-            result = subprocess.run(['termux-wifi-connect', '-s', ssid, '-p', password], capture_output=True, text=True, timeout=30)
-            if result.returncode == 0:
-                print(f'{G}Connection request sent for {ssid}.{X}')
-            else:
-                print(f'{R}Wi-Fi connection failed: {result.stderr.strip() or "unknown error"}{X}')
-        except Exception:
-            print(f'{Y}Wi-Fi connection request was unavailable. Use Android Wi-Fi Settings instead.{X}')
+    elif choice == '2':
+        print(f'{C}Opening Android Wi-Fi Settings. Connect there, then return to 255Tools.{X}')
+        if shutil.which('am'):
+            subprocess.run(['am', 'start', '-a', 'android.settings.WIFI_SETTINGS'], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     else:
         print('Invalid choice.')
 
