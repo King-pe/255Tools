@@ -5,7 +5,7 @@
 ## Features
 
 1. **Domain checker** — uses RDAP to show whether a domain has registration information.
-2. **Temp mail account** — creates or logs into an inbox you control through mail.tm, lists messages, reads a selected message, sends email, auto-refreshes for new messages with a green indicator, and can permanently delete the currently logged-in inbox after an exact `DELETE` confirmation; do not use it for spam, bypasses, or fake accounts.
+2. **Temp mail account** — creates or logs into an inbox you control through mail.tm, lists messages, reads a selected message, replies directly with an automatic `Re:` subject after an exact `SEND` confirmation, sends email, auto-refreshes for new messages with a green indicator, and can permanently delete the currently logged-in inbox after an exact `DELETE` confirmation; do not use it for spam, bypasses, or fake accounts.
 3. **Video downloader** — a `yt-dlp` wrapper for videos you are authorized to save. It targets approximately 250p when available.
 4. **Social lookup** — checks GitHub, YouTube, Facebook, Instagram, X/Twitter, and TikTok public profile links only; it does not search for phone numbers, email addresses, locations, private data, or private accounts.
 5. **Domain DNS Check** — checks A/AAAA addresses and, when `dig` is installed, NS/MX/TXT records to help verify DNS configuration.

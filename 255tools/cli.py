@@ -125,6 +125,25 @@ def auto_refresh_inbox():
         print(f'{R}Inbox refresh stopped: {error}{X}')
 
 
+def reply_to_message(token, message):
+    sender = (message.get('from') or {}).get('address')
+    if not sender:
+        print(f'{Y}This message has no replyable sender address.{X}')
+        return
+    subject = message.get('subject') or '(no subject)'
+    reply_subject = subject if subject.lower().startswith('re:') else f'Re: {subject}'
+    print(f'{C}Replying to: {sender}{X}')
+    text = ask('Reply message:')
+    if not text:
+        print(f'{Y}Reply cancelled because it was empty.{X}')
+        return
+    if ask('Type SEND to send this reply:') != 'SEND':
+        print(f'{G}Reply cancelled. Nothing was sent.{X}')
+        return
+    sent = mail_request('/messages', method='POST', token=token, payload={'to': [{'address': sender}], 'subject': reply_subject, 'text': text})
+    print(f"{G}Reply sent. Message id: {sent.get('id', 'accepted')}{X}")
+
+
 def temp_mail():
     print(f'{Y}Use only an inbox you created and control. Do not use it for spam, bypasses, or fake accounts.{X}')
     print('1) Create inbox  2) Login and view inbox  3) Send email  4) Delete current inbox  5) Auto-refresh inbox')
@@ -152,6 +171,8 @@ def temp_mail():
             if message_id:
                 detail = mail_request(f'/messages/{urllib.parse.quote(message_id)}', token=token)
                 print(detail.get('text') or detail.get('intro') or '(empty message)')
+                if ask('Reply to this message? (y/N):').lower() == 'y':
+                    reply_to_message(token, detail)
         elif choice == '3':
             token, _ = mail_login()
             recipient = ask('Recipient email:'); subject = ask('Subject:'); text = ask('Message:')
