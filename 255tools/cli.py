@@ -73,9 +73,26 @@ def mail_login():
     return result['token'], address
 
 
+def delete_temp_inbox():
+    print(f'{R}PERMANENT ACTION: this deletes the mail.tm inbox you log into and its messages.{X}')
+    token, address = mail_login()
+    account = mail_request('/me', token=token)
+    account_id = account.get('id')
+    if not account_id:
+        print(f'{R}Could not identify the authenticated inbox; nothing was deleted.{X}')
+        return
+    print(f'{Y}Inbox selected: {address}{X}')
+    confirmation = ask('Type DELETE to permanently remove this inbox:')
+    if confirmation != 'DELETE':
+        print(f'{G}Cancelled. The inbox was not changed.{X}')
+        return
+    mail_request(f'/accounts/{urllib.parse.quote(account_id)}', method='DELETE', token=token)
+    print(f'{G}Inbox deleted successfully: {address}{X}')
+
+
 def temp_mail():
     print(f'{Y}Use only an inbox you created and control. Do not use it for spam, bypasses, or fake accounts.{X}')
-    print('1) Create inbox  2) Login and view inbox  3) Send email')
+    print('1) Create inbox  2) Login and view inbox  3) Send email  4) Delete current inbox')
     choice = ask('Choose:')
     try:
         if choice == '1':
@@ -105,6 +122,8 @@ def temp_mail():
             recipient = ask('Recipient email:'); subject = ask('Subject:'); text = ask('Message:')
             sent = mail_request('/messages', method='POST', token=token, payload={'to': [{'address': recipient}], 'subject': subject, 'text': text})
             print(f"{G}Email sent. Message id: {sent.get('id', 'accepted')}{X}")
+        elif choice == '4':
+            delete_temp_inbox()
         else:
             print('Invalid choice.')
     except Exception as error:
